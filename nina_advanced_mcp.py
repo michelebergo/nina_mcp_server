@@ -18,7 +18,7 @@ ENV_IMAGE_SAVE_DIR = 'IMAGE_SAVE_DIR'
 
 # Default values
 DEFAULT_NINA_HOST = 'localhost'
-DEFAULT_NINA_PORT = 1888
+DEFAULT_NINA_PORT = '1888'
 DEFAULT_LOG_LEVEL = 'INFO'
 DEFAULT_IMAGE_SAVE_DIR = str(Path('~/Desktop/NINA_Images').expanduser())
 
@@ -146,10 +146,14 @@ def create_error_response(error_type: str, message: str, details: Optional[Dict]
     }
 
 # Initialize FastMCP
+#mcp = FastMCP(
+#    name="NINA Advanced API",
+#    description="Model Context Provider for N.I.N.A. astrophotography software using Advanced API",
+#    version="0.1.0"
+#)
+
 mcp = FastMCP(
-    name="NINA Advanced API",
-    description="Model Context Provider for N.I.N.A. astrophotography software using Advanced API",
-    version="0.1.0"
+    name="NINA Advanced API"
 )
 
 class ImageType(str, Enum):
@@ -392,6 +396,23 @@ class CameraBinningInput(BaseModel):
     """Input model for camera binning settings"""
     binning: str  # Format: "1x1", "2x2", "3x3", "4x4" etc.
 
+class CameraGainInput(BaseModel):
+    """Input model for setting camera gain"""
+    gain: int  # Gain value
+
+class CameraOffsetInput(BaseModel):
+    """Input model for setting camera offset"""
+    offset: int  # Offset value
+
+class CameraUSBLimitInput(BaseModel):
+    """Input model for setting camera USB limit"""
+    usb_limit: int  # USB limit value (bandwidth)
+
+class CameraSubsampleInput(BaseModel):
+    """Input model for setting camera subsampling"""
+    x: int  # X subsample value
+    y: int  # Y subsample value
+
 class ImageHistoryInput(BaseModel):
     """Input model for getting image history"""
     limit: Optional[int] = None  # Limit to number of images to return
@@ -460,6 +481,20 @@ class MountParkPositionInput(BaseModel):
     ra: float
     dec: float
 
+class MountSyncInput(BaseModel):
+    """Input model for mount sync"""
+    ra: float  # Right Ascension in hours
+    dec: float  # Declination in degrees
+
+# Rotator Input Models
+class RotatorMoveMechanicallyInput(BaseModel):
+    """Input model for mechanical rotator movement"""
+    position: float  # Target mechanical position in degrees
+
+class RotatorSetRangeInput(BaseModel):
+    """Input model for setting rotator range"""
+    range_start: float  # Start of mechanical range in degrees
+
 # Dome Input Models
 class DomeConnectInput(BaseModel):
     device_id: Optional[str] = None
@@ -486,6 +521,182 @@ class FlatsInput(BaseModel):
     binning: Optional[str] = None  # Binning mode e.g. "1x1", "2x2"
     gain: Optional[int] = None  # Camera gain setting
     offset: Optional[int] = None  # Camera offset setting
+
+class AutoBrightnessFlatsInput(BaseModel):
+    """Input model for auto-brightness flats capture settings"""
+    count: int  # Number of flats to capture
+    exposureTime: float  # Fixed exposure time in seconds
+    minBrightness: Optional[int] = None  # Minimum flat panel brightness (0-99)
+    maxBrightness: Optional[int] = None  # Maximum flat panel brightness (1-100)
+    histogramMean: Optional[float] = None  # Target histogram mean value
+    meanTolerance: Optional[float] = None  # Tolerance for histogram mean
+    filterId: Optional[int] = None  # ID of the filter to use
+    binning: Optional[str] = None  # Binning mode e.g. "1x1", "2x2"
+    gain: Optional[int] = None  # Camera gain setting
+    offset: Optional[int] = None  # Camera offset setting
+    keepClosed: Optional[bool] = None  # Whether to keep flat panel closed after
+
+class AutoExposureFlatsInput(BaseModel):
+    """Input model for auto-exposure flats capture settings"""
+    count: int  # Number of flats to capture
+    brightness: float  # Fixed flat panel brightness (0-100)
+    minExposure: Optional[float] = None  # Minimum exposure time in seconds
+    maxExposure: Optional[float] = None  # Maximum exposure time in seconds
+    histogramMean: Optional[float] = None  # Target histogram mean value
+    meanTolerance: Optional[float] = None  # Tolerance for histogram mean
+    filterId: Optional[int] = None  # ID of the filter to use
+    binning: Optional[str] = None  # Binning mode e.g. "1x1", "2x2"
+    gain: Optional[int] = None  # Camera gain setting
+    offset: Optional[int] = None  # Camera offset setting
+    keepClosed: Optional[bool] = None  # Whether to keep flat panel closed after
+
+class TrainedDarkFlatInput(BaseModel):
+    """Input model for trained dark flat capture settings"""
+    count: int  # Number of dark flats to capture
+    filterId: Optional[int] = None  # ID of the filter to use
+    binning: Optional[str] = None  # Binning mode e.g. "1x1", "2x2"
+    gain: Optional[int] = None  # Camera gain setting
+    offset: Optional[int] = None  # Camera offset setting
+    keepClosed: Optional[bool] = None  # Whether to keep flat panel closed after
+
+# Sequence Input Models
+class SequenceStartInput(BaseModel):
+    """Input model for starting a sequence"""
+    skipValidation: Optional[bool] = None  # Whether to skip validation
+
+class SequenceLoadInput(BaseModel):
+    """Input model for loading a sequence from file"""
+    sequenceName: str  # Name of the sequence to load
+
+class SequenceEditInput(BaseModel):
+    """Input model for editing a sequence property"""
+    path: str  # Path to property (e.g., 'Imaging-Items-0-Items-0-ExposureTime')
+    value: str  # New value for the property
+
+class SequenceSetTargetInput(BaseModel):
+    """Input model for setting a target in the sequence"""
+    name: str  # Target name
+    ra: float  # Right Ascension in degrees
+    dec: float  # Declination in degrees
+    rotation: float  # Target rotation in degrees
+    index: int  # Index of the target container to update (minimum 0)
+
+class SequenceLoadJSONInput(BaseModel):
+    """Input model for loading a sequence from JSON"""
+    sequenceJSON: str  # JSON string representing the sequence
+
+# Weather Input Models
+class WeatherConnectInput(BaseModel):
+    """Input model for weather device connection"""
+    device_id: Optional[str] = None  # Device ID to connect to
+
+# Safety Monitor Input Models
+class SafetyMonitorConnectInput(BaseModel):
+    """Input model for safety monitor connection"""
+    device_id: Optional[str] = None  # Device ID to connect to
+
+# Livestack Input Models  
+class LivestackImageInput(BaseModel):
+    """Input model for getting livestack stacked image"""
+    resize: Optional[int] = None  # Optional resize parameter for the image
+    format: Optional[str] = None  # Optional format (jpeg, png)
+    quality: Optional[int] = None  # Optional quality for JPEG (0-100)
+
+# Framing Assistant Input Models
+class FramingAssistantMoonSeparationInput(BaseModel):
+    """Input model for moon separation calculation"""
+    ra: float  # Right Ascension in degrees
+    dec: float  # Declination in degrees
+
+class FramingAssistantSetSourceInput(BaseModel):
+    """Input model for setting framing source"""
+    source: str  # Source identifier or name
+
+class FramingAssistantSetCoordinatesInput(BaseModel):
+    """Input model for setting framing coordinates"""
+    ra: float  # Right Ascension in degrees or hours
+    dec: float  # Declination in degrees
+
+class FramingAssistantSetRotationInput(BaseModel):
+    """Input model for setting camera rotation"""
+    rotation: float  # Rotation angle in degrees
+
+# Profile Input Models
+class ProfileShowInput(BaseModel):
+    """Input model for showing profile"""
+    active: Optional[bool] = None  # Whether to show active profile or list of all profiles
+
+class ProfileChangeValueInput(BaseModel):
+    """Input model for changing profile value"""
+    setting_path: str  # Path to setting (e.g., "CameraSettings.Gain")
+    value: str  # New value for the setting
+
+class ProfileSwitchInput(BaseModel):
+    """Input model for switching profile"""
+    profile_id: str  # Profile ID to switch to
+
+# Application Input Models
+class ApplicationGetTabInput(BaseModel):
+    """Input model for getting application tab"""
+    tab: str  # Tab name (e.g., "EQUIPMENT", "SKYATLAS", "FRAMING", "FLATWIZARD", "SEQUENCE", "IMAGING")
+
+# Image Input Models
+class ImageSolveInput(BaseModel):
+    """Input model for solving an image"""
+    image_path: Optional[str] = None  # Optional path to image file
+    blind: Optional[bool] = None  # Whether to use blind solving
+
+class ImageGetPreparedInput(BaseModel):
+    """Input model for getting prepared image"""
+    resize: Optional[int] = None  # Optional resize parameter
+    format: Optional[str] = None  # Optional format (jpeg, png)
+    quality: Optional[int] = None  # Optional quality for JPEG
+
+# FilterWheel Input Models
+class FilterWheelAddFilterInput(BaseModel):
+    """Input model for adding a filter"""
+    name: str  # Filter name
+    position: int  # Filter position/slot
+    focus_offset: Optional[int] = None  # Optional focus offset
+
+class FilterWheelRemoveFilterInput(BaseModel):
+    """Input model for removing a filter"""
+    position: int  # Filter position to remove
+
+# Flats Input Models (additional)
+class TrainedFlatsInput(BaseModel):
+    """Input model for trained flats"""
+    filter_name: Optional[str] = None  # Filter name for trained flats
+    binning: Optional[str] = None  # Binning mode
+
+# Plugin Input Models
+class PluginSettingsInput(BaseModel):
+    """Input model for plugin settings"""
+    plugin_id: Optional[str] = None  # Optional plugin ID
+
+# Plate Solve Input Models
+class PlateSolveCapSolveInput(BaseModel):
+    """Input model for plate solving the currently loaded image"""
+    blind: Optional[bool] = None  # Whether to use blind solving
+    coordinates: Optional[str] = None  # Optional hint coordinates (RA,Dec)
+    focalLength: Optional[float] = None  # Optional focal length hint
+    pixelSize: Optional[float] = None  # Optional pixel size hint
+
+class PlateSolveSyncInput(BaseModel):
+    """Input model for plate solving and syncing mount"""
+    blind: Optional[bool] = None  # Whether to use blind solving
+    coordinates: Optional[str] = None  # Optional hint coordinates (RA,Dec)
+    focalLength: Optional[float] = None  # Optional focal length hint
+    pixelSize: Optional[float] = None  # Optional pixel size hint
+
+class PlateSolveCenterInput(BaseModel):
+    """Input model for plate solving, syncing, and centering"""
+    ra: float  # Target Right Ascension in hours
+    dec: float  # Target Declination in degrees
+    blind: Optional[bool] = None  # Whether to use blind solving
+    focalLength: Optional[float] = None  # Optional focal length hint
+    pixelSize: Optional[float] = None  # Optional pixel size hint
+    maxIterations: Optional[int] = 3  # Maximum centering iterations
 
 # Global client instance
 nina_client = None
@@ -1376,6 +1587,286 @@ async def nina_get_image_history(input: ImageHistoryInput) -> Dict[str, Any]:
     except Exception as e:
         return create_error_response("NINAImageError", str(e))
 
+@mcp.tool()
+async def nina_solve_image(input: ImageSolveInput) -> Dict[str, Any]:
+    """Plate solve an image file.
+    
+    Args:
+        input: ImageSolveInput containing:
+            image_path: Optional path to image file to solve
+            blind: Optional whether to use blind solving
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - SolveResult: Plate solve results with coordinates
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAImageError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        params = []
+        if input.image_path:
+            params.append(f"path={input.image_path}")
+        if input.blind is not None:
+            params.append(f"blind={str(input.blind).lower()}")
+        
+        endpoint = "image/solve"
+        if params:
+            endpoint += "?" + "&".join(params)
+        
+        result = await client._send_request("GET", endpoint)
+        solve_result = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Image solved successfully",
+            "SolveResult": solve_result,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAImageError", str(e))
+
+@mcp.tool()
+async def nina_solve_prepared_image(input: ImageSolveInput) -> Dict[str, Any]:
+    """Plate solve the prepared image in NINA.
+    
+    Args:
+        input: ImageSolveInput containing:
+            blind: Optional whether to use blind solving
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - SolveResult: Plate solve results
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAImageError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "image/solve-prepared"
+        if input.blind is not None:
+            endpoint += f"?blind={str(input.blind).lower()}"
+        
+        result = await client._send_request("GET", endpoint)
+        solve_result = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Prepared image solved successfully",
+            "SolveResult": solve_result,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAImageError", str(e))
+
+@mcp.tool()
+async def nina_get_prepared_image(input: ImageGetPreparedInput) -> Dict[str, Any]:
+    """Get the prepared image from NINA.
+    
+    Args:
+        input: ImageGetPreparedInput containing:
+            resize: Optional resize parameter
+            format: Optional format (jpeg, png)
+            quality: Optional quality for JPEG
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Image: Base64-encoded image data
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAImageError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        params = []
+        if input.resize is not None:
+            params.append(f"resize={input.resize}")
+        if input.format is not None:
+            params.append(f"format={input.format}")
+        if input.quality is not None:
+            params.append(f"quality={input.quality}")
+        
+        endpoint = "image/get-prepared"
+        if params:
+            endpoint += "?" + "&".join(params)
+        
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Prepared image retrieved successfully",
+            "Image": result.get("Response"),
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAImageError", str(e))
+
+@mcp.tool()
+async def nina_set_camera_gain(input: CameraGainInput) -> Dict[str, Any]:
+    """Set the camera gain in NINA astronomy software.
+    
+    Args:
+        input: CameraGainInput containing:
+            gain: Gain value to set
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINACameraError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"equipment/camera/set-gain?gain={input.gain}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Camera gain set to {input.gain} successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINACameraError", str(e))
+
+@mcp.tool()
+async def nina_set_camera_offset(input: CameraOffsetInput) -> Dict[str, Any]:
+    """Set the camera offset in NINA astronomy software.
+    
+    Args:
+        input: CameraOffsetInput containing:
+            offset: Offset value to set
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINACameraError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"equipment/camera/set-offset?offset={input.offset}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Camera offset set to {input.offset} successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINACameraError", str(e))
+
+@mcp.tool()
+async def nina_set_camera_usb_limit(input: CameraUSBLimitInput) -> Dict[str, Any]:
+    """Set the camera USB bandwidth limit in NINA astronomy software.
+    
+    Args:
+        input: CameraUSBLimitInput containing:
+            usb_limit: USB bandwidth limit value to set
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINACameraError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"equipment/camera/set-usb-limit?usbLimit={input.usb_limit}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Camera USB limit set to {input.usb_limit} successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINACameraError", str(e))
+
+@mcp.tool()
+async def nina_set_camera_subsample(input: CameraSubsampleInput) -> Dict[str, Any]:
+    """Set the camera subsampling in NINA astronomy software.
+    
+    Args:
+        input: CameraSubsampleInput containing:
+            x: X subsample value
+            y: Y subsample value
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINACameraError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"equipment/camera/set-subsample?x={input.x}&y={input.y}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Camera subsample set to X={input.x}, Y={input.y} successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINACameraError", str(e))
+
 # Mount Tools
 @mcp.tool()
 async def nina_connect_mount(input: MountConnectInput) -> Dict[str, Any]:
@@ -1864,6 +2355,270 @@ async def nina_set_park_position(input: MountParkPositionInput) -> Dict[str, Any
 
     except Exception as e:
         return create_error_response("NINAMountError", str(e))
+
+@mcp.tool()
+async def nina_sync_mount(input: MountSyncInput) -> Dict[str, Any]:
+    """Sync the mount to specific coordinates.
+    
+    Args:
+        input: MountSyncInput containing:
+            ra: Right Ascension in hours
+            dec: Declination in degrees
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAMountError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Convert RA from hours to degrees for the API
+        ra_degrees = input.ra * 15.0
+        endpoint = f"equipment/telescope/sync?ra={ra_degrees}&dec={input.dec}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Mount synced to RA={input.ra}h, Dec={input.dec}°",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAMountError", str(e))
+
+# Plate Solve Tools
+@mcp.tool()
+async def nina_platesolve_capsolve(input: Optional[PlateSolveCapSolveInput] = None) -> Dict[str, Any]:
+    """Plate solve the currently loaded image in NINA astronomy software.
+    
+    Args:
+        input: Optional PlateSolveCapSolveInput containing:
+            blind: Optional whether to use blind solving
+            coordinates: Optional hint coordinates (RA,Dec)
+            focalLength: Optional focal length hint in mm
+            pixelSize: Optional pixel size hint in microns
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - PlateSolveResult with RA, Dec, Rotation, PixelScale if successful
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAPlateSolveError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "plate-solve/capsolve"
+        params = []
+        
+        if input:
+            if input.blind is not None:
+                params.append(f"blind={str(input.blind).lower()}")
+            if input.coordinates:
+                params.append(f"coordinates={input.coordinates}")
+            if input.focalLength is not None:
+                params.append(f"focalLength={input.focalLength}")
+            if input.pixelSize is not None:
+                params.append(f"pixelSize={input.pixelSize}")
+        
+        if params:
+            endpoint += "?" + "&".join(params)
+
+        result = await client._send_request("GET", endpoint)
+        response = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Plate solve completed successfully" if response.get("Success") else "Plate solve failed",
+            "PlateSolveResult": response,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAPlateSolveError", str(e))
+
+@mcp.tool()
+async def nina_platesolve_sync(input: Optional[PlateSolveSyncInput] = None) -> Dict[str, Any]:
+    """Plate solve the currently loaded image and sync the mount in NINA astronomy software.
+    
+    Args:
+        input: Optional PlateSolveSyncInput containing:
+            blind: Optional whether to use blind solving
+            coordinates: Optional hint coordinates (RA,Dec)
+            focalLength: Optional focal length hint in mm
+            pixelSize: Optional pixel size hint in microns
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - PlateSolveResult and mount sync status
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAPlateSolveError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "plate-solve/sync"
+        params = []
+        
+        if input:
+            if input.blind is not None:
+                params.append(f"blind={str(input.blind).lower()}")
+            if input.coordinates:
+                params.append(f"coordinates={input.coordinates}")
+            if input.focalLength is not None:
+                params.append(f"focalLength={input.focalLength}")
+            if input.pixelSize is not None:
+                params.append(f"pixelSize={input.pixelSize}")
+        
+        if params:
+            endpoint += "?" + "&".join(params)
+
+        result = await client._send_request("GET", endpoint)
+        response = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Plate solve and mount sync completed successfully" if response.get("Success") else "Plate solve or sync failed",
+            "PlateSolveResult": response,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAPlateSolveError", str(e))
+
+@mcp.tool()
+async def nina_platesolve_center(input: PlateSolveCenterInput) -> Dict[str, Any]:
+    """Plate solve, sync mount, and iteratively center on target coordinates in NINA astronomy software.
+    
+    Args:
+        input: PlateSolveCenterInput containing:
+            ra: Target Right Ascension in hours
+            dec: Target Declination in degrees
+            blind: Optional whether to use blind solving
+            focalLength: Optional focal length hint in mm
+            pixelSize: Optional pixel size hint in microns
+            maxIterations: Optional maximum centering iterations (default 3)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Centering result with final position and iteration count
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAPlateSolveError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"plate-solve/center?ra={input.ra}&dec={input.dec}"
+        
+        if input.blind is not None:
+            endpoint += f"&blind={str(input.blind).lower()}"
+        if input.focalLength is not None:
+            endpoint += f"&focalLength={input.focalLength}"
+        if input.pixelSize is not None:
+            endpoint += f"&pixelSize={input.pixelSize}"
+        if input.maxIterations is not None:
+            endpoint += f"&maxIterations={input.maxIterations}"
+
+        result = await client._send_request("GET", endpoint)
+        response = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Centering completed successfully" if response.get("Success") else "Centering failed",
+            "CenteringResult": response,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAPlateSolveError", str(e))
+
+@mcp.tool()
+async def nina_platesolve_status() -> Dict[str, Any]:
+    """Get the status of the current plate solve operation in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Status information (running, progress, etc.)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAPlateSolveError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "plate-solve/status")
+        response = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Plate solve status retrieved successfully",
+            "Status": response,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAPlateSolveError", str(e))
+
+@mcp.tool()
+async def nina_platesolve_cancel() -> Dict[str, Any]:
+    """Cancel the current plate solve operation in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAPlateSolveError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "plate-solve/cancel")
+        
+        return {
+            "Success": True,
+            "Message": "Plate solve operation cancelled successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAPlateSolveError", str(e))
 
 # Dome Tools
 @mcp.tool()
@@ -2417,6 +3172,143 @@ async def nina_disconnect() -> Dict[str, Any]:
         return create_error_response("NINADisconnectionError", str(e))
 
 @mcp.tool()
+async def nina_get_version() -> Dict[str, Any]:
+    """Get the NINA application version.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Version: NINA version string
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAApplicationError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "version")
+        version = result.get("Response", "Unknown")
+        
+        return {
+            "Success": True,
+            "Message": f"NINA version: {version}",
+            "Version": version,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAApplicationError", str(e))
+
+@mcp.tool()
+async def nina_get_start_time() -> Dict[str, Any]:
+    """Get the NINA application start time.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - StartTime: Application start timestamp
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAApplicationError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "application/start-time")
+        start_time = result.get("Response", "Unknown")
+        
+        return {
+            "Success": True,
+            "Message": f"NINA started at: {start_time}",
+            "StartTime": start_time,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAApplicationError", str(e))
+
+@mcp.tool()
+async def nina_get_tab(input: ApplicationGetTabInput) -> Dict[str, Any]:
+    """Get or activate a specific NINA application tab.
+    
+    Args:
+        input: ApplicationGetTabInput containing:
+            tab: Tab name (EQUIPMENT, SKYATLAS, FRAMING, FLATWIZARD, SEQUENCE, IMAGING)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAApplicationError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", f"application/tab?tab={input.tab}")
+        
+        return {
+            "Success": True,
+            "Message": f"Activated tab: {input.tab}",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAApplicationError", str(e))
+
+@mcp.tool()
+async def nina_get_logs() -> Dict[str, Any]:
+    """Get NINA application logs.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Logs: Application log entries
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAApplicationError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "application/logs")
+        logs = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Retrieved {len(logs) if isinstance(logs, list) else 'application'} logs",
+            "Logs": logs,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAApplicationError", str(e))
+
+@mcp.tool()
 async def nina_time_now() -> Dict[str, Any]:
     """Get the current time from the computer in various formats.
     
@@ -2505,7 +3397,7 @@ async def nina_get_status() -> Dict[str, Any]:
             "filterwheel": "equipment/filterwheel/info",
             "guider": "equipment/guider/info",
             "dome": "equipment/dome/info",
-            "flatpanel": "equipment/flat-panel/info",
+            "flatpanel": "equipment/flatdevice/info",
             "safetymonitor": "equipment/safetymonitor/info",
             "weather": "equipment/weather/info",
             "switch": "equipment/switch/info"
@@ -2791,6 +3683,577 @@ async def nina_get_flats_progress() -> Dict[str, Any]:
         }
     except Exception as e:
         return create_error_response("NINAFlatsError", str(e))
+
+@mcp.tool()
+async def nina_auto_brightness_flats(input: AutoBrightnessFlatsInput) -> Dict[str, Any]:
+    """Start capturing auto-brightness flats in NINA astronomy software.
+    NINA will automatically adjust flat panel brightness for a fixed exposure time.
+    
+    Args:
+        input: AutoBrightnessFlatsInput containing:
+            count: Number of flats to capture (required)
+            exposureTime: Fixed exposure time in seconds (required)
+            minBrightness: Optional minimum flat panel brightness (0-99)
+            maxBrightness: Optional maximum flat panel brightness (1-100)
+            histogramMean: Optional target histogram mean value
+            meanTolerance: Optional tolerance for histogram mean
+            filterId: Optional ID of the filter to use
+            binning: Optional binning mode e.g. "1x1", "2x2"
+            gain: Optional camera gain setting
+            offset: Optional camera offset setting
+            keepClosed: Optional whether to keep flat panel closed after
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFlatsError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Build query parameters
+        params = [
+            f"count={input.count}",
+            f"exposureTime={input.exposureTime}"
+        ]
+        
+        if input.minBrightness is not None:
+            params.append(f"minBrightness={input.minBrightness}")
+        if input.maxBrightness is not None:
+            params.append(f"maxBrightness={input.maxBrightness}")
+        if input.histogramMean is not None:
+            params.append(f"histogramMean={input.histogramMean}")
+        if input.meanTolerance is not None:
+            params.append(f"meanTolerance={input.meanTolerance}")
+        if input.filterId is not None:
+            params.append(f"filterId={input.filterId}")
+        if input.binning:
+            params.append(f"binning={input.binning}")
+        if input.gain is not None:
+            params.append(f"gain={input.gain}")
+        if input.offset is not None:
+            params.append(f"offset={input.offset}")
+        if input.keepClosed is not None:
+            params.append(f"keepClosed={str(input.keepClosed).lower()}")
+
+        endpoint = "flats/auto-brightness?" + "&".join(params)
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Auto-brightness flats capture started successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFlatsError", str(e))
+
+@mcp.tool()
+async def nina_auto_exposure_flats(input: AutoExposureFlatsInput) -> Dict[str, Any]:
+    """Start capturing auto-exposure flats in NINA astronomy software.
+    NINA will automatically adjust exposure time for a fixed flat panel brightness.
+    
+    Args:
+        input: AutoExposureFlatsInput containing:
+            count: Number of flats to capture (required)
+            brightness: Fixed flat panel brightness 0-100 (required)
+            minExposure: Optional minimum exposure time in seconds
+            maxExposure: Optional maximum exposure time in seconds
+            histogramMean: Optional target histogram mean value
+            meanTolerance: Optional tolerance for histogram mean
+            filterId: Optional ID of the filter to use
+            binning: Optional binning mode e.g. "1x1", "2x2"
+            gain: Optional camera gain setting
+            offset: Optional camera offset setting
+            keepClosed: Optional whether to keep flat panel closed after
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFlatsError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Build query parameters
+        params = [
+            f"count={input.count}",
+            f"brightness={input.brightness}"
+        ]
+        
+        if input.minExposure is not None:
+            params.append(f"minExposure={input.minExposure}")
+        if input.maxExposure is not None:
+            params.append(f"maxExposure={input.maxExposure}")
+        if input.histogramMean is not None:
+            params.append(f"histogramMean={input.histogramMean}")
+        if input.meanTolerance is not None:
+            params.append(f"meanTolerance={input.meanTolerance}")
+        if input.filterId is not None:
+            params.append(f"filterId={input.filterId}")
+        if input.binning:
+            params.append(f"binning={input.binning}")
+        if input.gain is not None:
+            params.append(f"gain={input.gain}")
+        if input.offset is not None:
+            params.append(f"offset={input.offset}")
+        if input.keepClosed is not None:
+            params.append(f"keepClosed={str(input.keepClosed).lower()}")
+
+        endpoint = "flats/auto-exposure?" + "&".join(params)
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Auto-exposure flats capture started successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFlatsError", str(e))
+
+@mcp.tool()
+async def nina_trained_dark_flat(input: TrainedDarkFlatInput) -> Dict[str, Any]:
+    """Start capturing trained dark flats in NINA astronomy software.
+    Uses previously trained settings to capture dark flats.
+    
+    Args:
+        input: TrainedDarkFlatInput containing:
+            count: Number of dark flats to capture (required)
+            filterId: Optional ID of the filter to use
+            binning: Optional binning mode e.g. "1x1", "2x2"
+            gain: Optional camera gain setting
+            offset: Optional camera offset setting
+            keepClosed: Optional whether to keep flat panel closed after
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFlatsError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Build query parameters
+        params = [f"count={input.count}"]
+        
+        if input.filterId is not None:
+            params.append(f"filterId={input.filterId}")
+        if input.binning:
+            params.append(f"binning={input.binning}")
+        if input.gain is not None:
+            params.append(f"gain={input.gain}")
+        if input.offset is not None:
+            params.append(f"offset={input.offset}")
+        if input.keepClosed is not None:
+            params.append(f"keepClosed={str(input.keepClosed).lower()}")
+
+        endpoint = "flats/trained-dark-flat?" + "&".join(params)
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Trained dark flat capture started successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFlatsError", str(e))
+
+# Sequence Tools
+@mcp.tool()
+async def nina_sequence_start(input: Optional[SequenceStartInput] = None) -> Dict[str, Any]:
+    """Start the Advanced Sequence in NINA astronomy software.
+    
+    Args:
+        input: Optional SequenceStartInput containing:
+            skipValidation: Optional whether to skip sequence validation
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "sequence/start"
+        if input and input.skipValidation is not None:
+            endpoint += f"?skipValidation={str(input.skipValidation).lower()}"
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Sequence started successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_stop() -> Dict[str, Any]:
+    """Stop the Advanced Sequence in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "sequence/stop")
+        
+        return {
+            "Success": True,
+            "Message": "Sequence stopped successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_load(input: SequenceLoadInput) -> Dict[str, Any]:
+    """Load a sequence from a file in NINA astronomy software.
+    
+    Args:
+        input: SequenceLoadInput containing:
+            sequenceName: Name of the sequence to load (required)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"sequence/load?sequenceName={quote(input.sequenceName)}"
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Sequence '{input.sequenceName}' loaded successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_json() -> Dict[str, Any]:
+    """Get the current sequence as JSON in NINA astronomy software.
+    This endpoint is generally advised to use over state since it gives more reliable results.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Response with sequence structure (Conditions, Items, Triggers, Status, Name)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "sequence/json")
+        
+        return {
+            "Success": True,
+            "Message": "Sequence JSON retrieved successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_state() -> Dict[str, Any]:
+    """Get the complete sequence state in NINA astronomy software.
+    This is similar to json endpoint, but returns more elaborate sequence with plugin support.
+    Use sequence/json endpoint as it gives more reliable results unless you need the extra functionality.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Response with complete sequence structure
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "sequence/state")
+        
+        return {
+            "Success": True,
+            "Message": "Sequence state retrieved successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_list_available() -> Dict[str, Any]:
+    """List all available sequences in NINA astronomy software.
+    Returns sequence names from the default sequence folders.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Response with array of sequence names
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "sequence/list-available")
+        
+        return {
+            "Success": True,
+            "Message": "Available sequences retrieved successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_edit(input: SequenceEditInput) -> Dict[str, Any]:
+    """Edit a property in the current sequence in NINA astronomy software.
+    This is experimental and works with simple types (strings, numbers) but may not work with enums/objects.
+    Use sequence/state as reference, not sequence/json.
+    
+    Args:
+        input: SequenceEditInput containing:
+            path: Path to property using format 'Container-Items-Index-Property' (required)
+                  e.g., 'Imaging-Items-0-Items-0-ExposureTime'
+                  Use GlobalTriggers, Start, Imaging, End for root containers
+            value: New value for the property (required)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"sequence/edit?path={quote(input.path)}&value={quote(input.value)}"
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Sequence property '{input.path}' updated successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_reset() -> Dict[str, Any]:
+    """Reset the Advanced Sequence in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "sequence/reset")
+        
+        return {
+            "Success": True,
+            "Message": "Sequence reset successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_set_target(input: SequenceSetTargetInput) -> Dict[str, Any]:
+    """Set the target of a target container in the sequence.
+    
+    Args:
+        input: SequenceSetTargetInput containing:
+            name: Target name (required)
+            ra: Right Ascension in degrees (required)
+            dec: Declination in degrees (required)
+            rotation: Target rotation in degrees (required)
+            index: Index of the target container to update, minimum 0 (required)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"sequence/set-target?name={quote(input.name)}&ra={input.ra}&dec={input.dec}&rotation={input.rotation}&index={input.index}"
+
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Target '{input.name}' set successfully at container index {input.index}",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
+
+@mcp.tool()
+async def nina_sequence_load_json(input: SequenceLoadJSONInput) -> Dict[str, Any]:
+    """Load a sequence from JSON data in NINA astronomy software.
+    
+    Args:
+        input: SequenceLoadJSONInput containing:
+            sequenceJSON: JSON string representing the sequence structure (required)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASequenceError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Parse the JSON string to validate it
+        try:
+            sequence_data = json.loads(input.sequenceJSON)
+        except json.JSONDecodeError as e:
+            return create_error_response(
+                "NINASequenceError",
+                f"Invalid JSON: {str(e)}",
+                {"StatusCode": 400}
+            )
+
+        # Send POST request with JSON body
+        result = await client._send_request("POST", "sequence/load", data=sequence_data)
+        
+        return {
+            "Success": True,
+            "Message": "Sequence loaded from JSON successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASequenceError", str(e))
 
 # Guider Tools
 @mcp.tool()
@@ -3238,7 +4701,7 @@ async def nina_connect_flatpanel(input: FlatPanelConnectInput) -> Dict[str, Any]
                 {"StatusCode": 401}
             )
 
-        endpoint = "equipment/flat-panel/connect"
+        endpoint = "equipment/flatdevice/connect"
         if input.device_id:
             endpoint += f"?to={input.device_id}"
 
@@ -3271,7 +4734,7 @@ async def nina_disconnect_flatpanel() -> Dict[str, Any]:
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", "equipment/flat-panel/disconnect")
+        result = await client._send_request("GET", "equipment/flatdevice/disconnect")
         return {
             "Success": True,
             "Message": "Flat panel disconnected successfully",
@@ -3301,7 +4764,7 @@ async def nina_list_flatpanel_devices() -> Dict[str, Any]:
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", "equipment/flat-panel/list-devices")
+        result = await client._send_request("GET", "equipment/flatdevice/list-devices")
         return {
             "Success": True,
             "Message": "Flat panel devices listed successfully",
@@ -3331,7 +4794,7 @@ async def nina_rescan_flatpanel_devices() -> Dict[str, Any]:
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", "equipment/flat-panel/rescan")
+        result = await client._send_request("GET", "equipment/flatdevice/rescan")
         return {
             "Success": True,
             "Message": "Flat panel devices rescanned successfully",
@@ -3361,7 +4824,7 @@ async def nina_get_flatpanel_info() -> Dict[str, Any]:
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", "equipment/flat-panel/info")
+        result = await client._send_request("GET", "equipment/flatdevice/info")
         return {
             "Success": True,
             "Message": "Flat panel information retrieved successfully",
@@ -3394,7 +4857,7 @@ async def nina_set_flatpanel_light(input: FlatPanelLightInput) -> Dict[str, Any]
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", f"equipment/flat-panel/set-light?power={str(input.power).lower()}")
+        result = await client._send_request("GET", f"equipment/flatdevice/set-light?power={str(input.power).lower()}")
         return {
             "Success": True,
             "Message": f"Flat panel light {'enabled' if input.power else 'disabled'} successfully",
@@ -3427,7 +4890,7 @@ async def nina_set_flatpanel_cover(input: FlatPanelCoverInput) -> Dict[str, Any]
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", f"equipment/flat-panel/set-cover?closed={str(input.closed).lower()}")
+        result = await client._send_request("GET", f"equipment/flatdevice/set-cover?closed={str(input.closed).lower()}")
         return {
             "Success": True,
             "Message": f"Flat panel cover {'closed' if input.closed else 'opened'} successfully",
@@ -3460,7 +4923,7 @@ async def nina_set_flatpanel_brightness(input: FlatPanelBrightnessInput) -> Dict
                 {"StatusCode": 401}
             )
 
-        result = await client._send_request("GET", f"equipment/flat-panel/set-brightness?brightness={input.brightness}")
+        result = await client._send_request("GET", f"equipment/flatdevice/set-brightness?brightness={input.brightness}")
         return {
             "Success": True,
             "Message": f"Flat panel brightness set to {input.brightness} successfully",
@@ -3483,6 +4946,12 @@ class FocuserTemperatureInput(BaseModel):
     """Input model for focuser temperature compensation settings"""
     enabled: bool  # True to enable, False to disable
     temperature: Optional[float] = None  # Target temperature in Celsius
+
+class AutofocusInput(BaseModel):
+    """Input model for autofocus settings"""
+    method: Optional[str] = None  # Autofocus method (HFR, Contrast, etc.)
+    auto_focus_inner_crop_ratio: Optional[float] = None  # Inner crop ratio for AF (0-1)
+    auto_focus_outer_crop_ratio: Optional[float] = None  # Outer crop ratio for AF (0-1)
 
 @mcp.tool()
 async def nina_connect_focuser(input: FocuserConnectInput) -> Dict[str, Any]:
@@ -3679,6 +5148,35 @@ async def nina_move_focuser(input: FocuserMoveInput) -> Dict[str, Any]:
         return create_error_response("NINAFocuserError", str(e))
 
 @mcp.tool()
+async def nina_halt_focuser() -> Dict[str, Any]:
+    """Halt the focuser's current movement in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFocuserError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/focuser/halt")
+        return {
+            "Success": True,
+            "Message": "Focuser movement halted successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAFocuserError", str(e))
+
+@mcp.tool()
 async def nina_set_focuser_temperature(input: FocuserTemperatureInput) -> Dict[str, Any]:
     """Set the focuser temperature compensation in NINA astronomy software.
     
@@ -3711,6 +5209,114 @@ async def nina_set_focuser_temperature(input: FocuserTemperatureInput) -> Dict[s
             "Success": True,
             "Message": f"Focuser temperature compensation {'enabled' if input.enabled else 'disabled'} successfully",
             "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAFocuserError", str(e))
+
+@mcp.tool()
+async def nina_start_autofocus(input: Optional[AutofocusInput] = None) -> Dict[str, Any]:
+    """Start an autofocus routine in NINA astronomy software.
+    
+    Args:
+        input: Optional AutofocusInput containing:
+            method: Optional autofocus method
+            auto_focus_inner_crop_ratio: Optional inner crop ratio for AF (0-1)
+            auto_focus_outer_crop_ratio: Optional outer crop ratio for AF (0-1)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFocuserError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "equipment/focuser/autofocus"
+        params = []
+        
+        if input:
+            if input.method is not None:
+                params.append(f"method={input.method}")
+            if input.auto_focus_inner_crop_ratio is not None:
+                params.append(f"innerCropRatio={input.auto_focus_inner_crop_ratio}")
+            if input.auto_focus_outer_crop_ratio is not None:
+                params.append(f"outerCropRatio={input.auto_focus_outer_crop_ratio}")
+        
+        if params:
+            endpoint += "?" + "&".join(params)
+
+        result = await client._send_request("GET", endpoint)
+        return {
+            "Success": True,
+            "Message": "Autofocus started successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAFocuserError", str(e))
+
+@mcp.tool()
+async def nina_cancel_autofocus() -> Dict[str, Any]:
+    """Cancel the current autofocus routine in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFocuserError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/focuser/autofocus/cancel")
+        return {
+            "Success": True,
+            "Message": "Autofocus cancelled successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAFocuserError", str(e))
+
+@mcp.tool()
+async def nina_get_autofocus_status() -> Dict[str, Any]:
+    """Get the status of the current autofocus routine in NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Status information (running, progress, etc.)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFocuserError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/focuser/autofocus/status")
+        return {
+            "Success": True,
+            "Message": "Autofocus status retrieved successfully",
+            "Status": result.get("Response", {}),
             "Type": "NINA_API"
         }
     except Exception as e:
@@ -4614,6 +6220,1563 @@ async def nina_set_rotator_reverse(input: RotatorReverseInput) -> Dict[str, Any]
         }
     except Exception as e:
         return create_error_response("NINARotatorError", str(e))
+
+@mcp.tool()
+async def nina_move_rotator_mechanically(input: RotatorMoveMechanicallyInput) -> Dict[str, Any]:
+    """Move the rotator to a specific mechanical position.
+    
+    Args:
+        input: RotatorMoveMechanicallyInput containing:
+            position: Target mechanical position in degrees
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINARotatorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", f"equipment/rotator/move-mechanically?position={input.position}")
+        return {
+            "Success": True,
+            "Message": f"Rotator moving mechanically to {input.position}°",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINARotatorError", str(e))
+
+@mcp.tool()
+async def nina_reverse_rotator() -> Dict[str, Any]:
+    """Toggle the rotator reverse state.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINARotatorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/rotator/reverse")
+        return {
+            "Success": True,
+            "Message": "Rotator reverse state toggled",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINARotatorError", str(e))
+
+@mcp.tool()
+async def nina_set_rotator_range(input: RotatorSetRangeInput) -> Dict[str, Any]:
+    """Set the rotator's mechanical range start position.
+    
+    Args:
+        input: RotatorSetRangeInput containing:
+            range_start: Start of mechanical range in degrees
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINARotatorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", f"equipment/rotator/set-range?range={input.range_start}")
+        return {
+            "Success": True,
+            "Message": f"Rotator range start set to {input.range_start}°",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINARotatorError", str(e))
+
+# Switch Control Input Models
+class SwitchConnectInput(BaseModel):
+    """Input model for connecting to a switch device"""
+    device_id: str  # Device ID to connect to (from nina_list_switch_devices)
+
+class SwitchSetInput(BaseModel):
+    """Input model for setting a switch channel"""
+    index: int  # Writable channel index (position in WritableSwitches[])
+    value: float  # Target value (0/1 for binary or analog value)
+
+# Switch Control Tools
+@mcp.tool()
+async def nina_list_switch_devices() -> Dict[str, Any]:
+    """List available ASCOM switch devices in NINA astronomy software.
+    This also triggers a device rescan.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - List of available switch devices
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASwitchError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Get list of available switch devices
+        result = await client._send_request("GET", "equipment/switch/list-devices")
+        
+        return {
+            "Success": True,
+            "Message": "Switch devices listed successfully",
+            "Devices": result.get("Response", []),
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASwitchError", str(e))
+
+@mcp.tool()
+async def nina_connect_switch(input: SwitchConnectInput) -> Dict[str, Any]:
+    """Connect to a specific ASCOM switch device in NINA astronomy software.
+    
+    Args:
+        input: SwitchConnectInput containing:
+            device_id: Device ID from nina_list_switch_devices (e.g., 'ASCOM.SVBONY.Switch')
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the connection
+        - Details from NINA server
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASwitchError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Build the endpoint URL
+        endpoint = f"equipment/switch/connect?to={input.device_id}"
+
+        # Send the connect command
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Switch device '{input.device_id}' connected successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASwitchError", str(e))
+
+@mcp.tool()
+async def nina_disconnect_switch() -> Dict[str, Any]:
+    """Disconnect the switch device from NINA astronomy software.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the disconnection
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASwitchError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Send the disconnect command
+        result = await client._send_request("GET", "equipment/switch/disconnect")
+        
+        return {
+            "Success": True,
+            "Message": "Switch device disconnected successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASwitchError", str(e))
+
+@mcp.tool()
+async def nina_get_switch_channels() -> Dict[str, Any]:
+    """Retrieve all writable and read-only channels from the connected switch device.
+    Writable channel index corresponds to the position in WritableSwitches[].
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Device: Switch device metadata
+        - Writable: List of writable switch channels
+        - Readonly: List of read-only sensor channels
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASwitchError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Get switch channel information
+        result = await client._send_request("GET", "equipment/switch/info")
+        response = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Switch channels retrieved successfully",
+            "Device": response.get("Device", {}),
+            "Writable": response.get("WritableSwitches", []),
+            "Readonly": response.get("ReadonlySwitches", []),
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASwitchError", str(e))
+
+@mcp.tool()
+async def nina_set_switch(input: SwitchSetInput) -> Dict[str, Any]:
+    """Set a writable switch channel by index.
+    The index refers to the position in WritableSwitches[] array from nina_get_switch_channels.
+    
+    Args:
+        input: SwitchSetInput containing:
+            index: Writable channel index (position in WritableSwitches[])
+            value: Target value (0/1 for binary switches or analog value for dimmers)
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Applied: Applied value after clamping
+        - Readback: Channel state after setting
+        - Warnings: List of any warnings (e.g., value clamping)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASwitchError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Validate index bounds and check for value clamping
+        warnings = []
+        
+        # Get switch info to validate index and check value bounds
+        info_result = await client._send_request("GET", "equipment/switch/info")
+        info_response = info_result.get("Response", {})
+        writable_switches = info_response.get("WritableSwitches", [])
+        
+        # Validate index bounds
+        if input.index < 0:
+            return create_error_response(
+                "NINASwitchError",
+                f"Invalid index {input.index}. Index must be non-negative.",
+                {"StatusCode": 400, "ValidRange": f"0 to {len(writable_switches) - 1}"}
+            )
+        
+        if input.index >= len(writable_switches):
+            return create_error_response(
+                "NINASwitchError",
+                f"Invalid index {input.index}. Switch device has only {len(writable_switches)} writable channel(s).",
+                {"StatusCode": 400, "ValidRange": f"0 to {len(writable_switches) - 1}"}
+            )
+        
+        # Check for value clamping
+        target_switch = writable_switches[input.index]
+        min_value = target_switch.get("Minimum", 0)
+        max_value = target_switch.get("Maximum", 1)
+        switch_name = target_switch.get("Name", f"Channel {input.index}")
+        
+        if input.value < min_value:
+            warnings.append(
+                f"Value {input.value} is below minimum {min_value} for '{switch_name}'. "
+                f"NINA will clamp it to {min_value}."
+            )
+        elif input.value > max_value:
+            warnings.append(
+                f"Value {input.value} is above maximum {max_value} for '{switch_name}'. "
+                f"NINA will clamp it to {max_value}."
+            )
+
+        # Set the switch channel
+        endpoint = f"equipment/switch/set?index={input.index}&value={input.value}"
+        result = await client._send_request("GET", endpoint)
+        response = result.get("Response", {})
+        
+        # Build response message
+        message = f"Switch channel {input.index} ('{switch_name}') set to {input.value} successfully"
+        
+        if isinstance(response, str):
+            # If response is a string, create a simple success response
+            return {
+                "Success": True,
+                "Message": message,
+                "Response": response,
+                "Warnings": warnings,
+                "Details": result,
+                "Type": "NINA_API"
+            }
+
+        # Check if value was clamped
+        applied_value = response.get("Applied")
+        if applied_value is not None and applied_value != input.value:
+            if not warnings:  # Add warning if not already present
+                warnings.append(
+                    f"Requested value {input.value} was clamped to {applied_value} "
+                    f"(valid range: {min_value} to {max_value})."
+                )
+
+        return {
+            "Success": True,
+            "Message": message,
+            "Applied": response.get("Applied"),
+            "Readback": response.get("Readback"),
+            "Warnings": warnings,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASwitchError", str(e))
+
+# ========================================
+# Weather Equipment Functions
+# ========================================
+
+@mcp.tool()
+async def nina_connect_weather(input: WeatherConnectInput) -> Dict[str, Any]:
+    """Connect to a weather station device.
+    
+    Args:
+        input: WeatherConnectInput containing:
+            device_id: Optional device ID to connect to. If not provided, connects to the default device.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Connected device details
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAWeatherError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "equipment/weather/connect"
+        if input.device_id:
+            endpoint += f"?to={input.device_id}"
+        
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Weather station connected successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAWeatherError", str(e))
+
+@mcp.tool()
+async def nina_disconnect_weather() -> Dict[str, Any]:
+    """Disconnect from the currently connected weather station.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAWeatherError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/weather/disconnect")
+        
+        return {
+            "Success": True,
+            "Message": "Weather station disconnected successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAWeatherError", str(e))
+
+@mcp.tool()
+async def nina_get_weather_info() -> Dict[str, Any]:
+    """Get comprehensive weather station information and current weather data.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - WeatherData: Comprehensive weather information including:
+            * AveragePeriod: Time period for averaging measurements (hours)
+            * CloudCover: Cloud cover percentage
+            * DewPoint: Dew point temperature (°C)
+            * Humidity: Relative humidity percentage
+            * Pressure: Atmospheric pressure (hPa)
+            * RainRate: Rain rate (mm/hour)
+            * SkyBrightness: Sky brightness (lux)
+            * SkyQuality: Sky quality measurement
+            * SkyTemperature: Sky temperature (°C)
+            * StarFWHM: Star FWHM measurement (arcseconds)
+            * Temperature: Ambient temperature (°C)
+            * WindDirection: Wind direction (degrees)
+            * WindGust: Wind gust speed (m/s)
+            * WindSpeed: Average wind speed (m/s)
+        - DeviceInfo: Device information (Id, Name, DisplayName, Connected, etc.)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAWeatherError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/weather/info")
+        response = result.get("Response", {})
+        
+        # Extract weather data for easier access
+        weather_data = {
+            "AveragePeriod": response.get("AveragePeriod"),
+            "CloudCover": response.get("CloudCover"),
+            "DewPoint": response.get("DewPoint"),
+            "Humidity": response.get("Humidity"),
+            "Pressure": response.get("Pressure"),
+            "RainRate": response.get("RainRate"),
+            "SkyBrightness": response.get("SkyBrightness"),
+            "SkyQuality": response.get("SkyQuality"),
+            "SkyTemperature": response.get("SkyTemperature"),
+            "StarFWHM": response.get("StarFWHM"),
+            "Temperature": response.get("Temperature"),
+            "WindDirection": response.get("WindDirection"),
+            "WindGust": response.get("WindGust"),
+            "WindSpeed": response.get("WindSpeed")
+        }
+        
+        return {
+            "Success": True,
+            "Message": "Weather station information retrieved successfully",
+            "WeatherData": weather_data,
+            "DeviceInfo": {
+                "Id": response.get("Id"),
+                "Name": response.get("Name"),
+                "DisplayName": response.get("DisplayName"),
+                "Connected": response.get("Connected"),
+                "Description": response.get("Description"),
+                "DriverInfo": response.get("DriverInfo"),
+                "DriverVersion": response.get("DriverVersion")
+            },
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAWeatherError", str(e))
+
+@mcp.tool()
+async def nina_list_weather_sources() -> Dict[str, Any]:
+    """List all available weather station sources/devices.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Sources: List of available weather station devices with their details
+        - Count: Number of available weather sources
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAWeatherError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/weather/list-devices")
+        sources = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Found {len(sources)} weather station source(s)",
+            "Sources": sources,
+            "Count": len(sources),
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAWeatherError", str(e))
+
+@mcp.tool()
+async def nina_rescan_weather_sources() -> Dict[str, Any]:
+    """Rescan for available weather station devices and return updated list.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Sources: Updated list of available weather station devices
+        - Count: Number of weather sources found after rescan
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAWeatherError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/weather/rescan")
+        sources = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Rescan complete. Found {len(sources)} weather station source(s)",
+            "Sources": sources,
+            "Count": len(sources),
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAWeatherError", str(e))
+
+# ========================================
+# Safety Monitor Equipment Functions
+# ========================================
+
+@mcp.tool()
+async def nina_connect_safetymonitor(input: SafetyMonitorConnectInput) -> Dict[str, Any]:
+    """Connect to a safety monitor device.
+    
+    Args:
+        input: SafetyMonitorConnectInput containing:
+            device_id: Optional device ID to connect to. If not provided, connects to the default device.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Connected device details
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASafetyMonitorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "equipment/safetymonitor/connect"
+        if input.device_id:
+            endpoint += f"?to={input.device_id}"
+        
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Safety monitor connected successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASafetyMonitorError", str(e))
+
+@mcp.tool()
+async def nina_disconnect_safetymonitor() -> Dict[str, Any]:
+    """Disconnect from the currently connected safety monitor.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASafetyMonitorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/safetymonitor/disconnect")
+        
+        return {
+            "Success": True,
+            "Message": "Safety monitor disconnected successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASafetyMonitorError", str(e))
+
+@mcp.tool()
+async def nina_get_safetymonitor_info() -> Dict[str, Any]:
+    """Get comprehensive safety monitor information and current safety status.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - IsSafe: Boolean indicating if conditions are safe for operation
+        - DeviceInfo: Device information (Id, Name, DisplayName, Connected, etc.)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASafetyMonitorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/safetymonitor/info")
+        response = result.get("Response", {})
+        
+        is_safe = response.get("IsSafe", False)
+        
+        return {
+            "Success": True,
+            "Message": f"Safety monitor reports: {'SAFE' if is_safe else 'UNSAFE'}",
+            "IsSafe": is_safe,
+            "DeviceInfo": {
+                "Id": response.get("Id"),
+                "Name": response.get("Name"),
+                "DisplayName": response.get("DisplayName"),
+                "Connected": response.get("Connected"),
+                "Description": response.get("Description"),
+                "DriverInfo": response.get("DriverInfo"),
+                "DriverVersion": response.get("DriverVersion")
+            },
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASafetyMonitorError", str(e))
+
+@mcp.tool()
+async def nina_list_safetymonitor_devices() -> Dict[str, Any]:
+    """List all available safety monitor devices.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Devices: List of available safety monitor devices with their details
+        - Count: Number of available safety monitor devices
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASafetyMonitorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/safetymonitor/list-devices")
+        devices = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Found {len(devices)} safety monitor device(s)",
+            "Devices": devices,
+            "Count": len(devices),
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASafetyMonitorError", str(e))
+
+@mcp.tool()
+async def nina_rescan_safetymonitor_devices() -> Dict[str, Any]:
+    """Rescan for available safety monitor devices and return updated list.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Devices: Updated list of available safety monitor devices
+        - Count: Number of safety monitor devices found after rescan
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINASafetyMonitorError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "equipment/safetymonitor/rescan")
+        devices = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Rescan complete. Found {len(devices)} safety monitor device(s)",
+            "Devices": devices,
+            "Count": len(devices),
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINASafetyMonitorError", str(e))
+
+# ========================================
+# Livestack Plugin Functions
+# ========================================
+
+@mcp.tool()
+async def nina_get_livestack_status() -> Dict[str, Any]:
+    """Get the current status of the Livestack plugin.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Status: Current livestack status ("running" or "stopped")
+        - Type of response
+        
+    Note: Requires Livestack plugin >= v1.0.1.7. This method cannot fail even if 
+    the plugin is not installed - it returns the last reported status.
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINALivestackError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "livestack/status")
+        status = result.get("Response", "unknown")
+        
+        return {
+            "Success": True,
+            "Message": f"Livestack status: {status}",
+            "Status": status,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINALivestackError", str(e))
+
+@mcp.tool()
+async def nina_start_livestack() -> Dict[str, Any]:
+    """Start the Livestack plugin.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+        
+    Note: Requires Livestack plugin >= v1.0.0.9. This method cannot fail even if 
+    the plugin is not installed - it simply issues a start command.
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINALivestackError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "livestack/start")
+        
+        return {
+            "Success": True,
+            "Message": "Livestack started successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINALivestackError", str(e))
+
+@mcp.tool()
+async def nina_stop_livestack() -> Dict[str, Any]:
+    """Stop the Livestack plugin.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+        
+    Note: Requires Livestack plugin >= v1.0.0.9. This method cannot fail even if 
+    the plugin is not installed - it simply issues a stop command.
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINALivestackError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "livestack/stop")
+        
+        return {
+            "Success": True,
+            "Message": "Livestack stopped successfully",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINALivestackError", str(e))
+
+@mcp.tool()
+async def nina_get_livestack_available_stacks() -> Dict[str, Any]:
+    """Get list of available stacks from the Livestack plugin.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - AvailableStacks: List of available stack identifiers
+        - Count: Number of available stacks
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINALivestackError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "livestack/available-stacks")
+        stacks = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Found {len(stacks)} available stack(s)",
+            "AvailableStacks": stacks,
+            "Count": len(stacks),
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINALivestackError", str(e))
+
+@mcp.tool()
+async def nina_get_livestack_stacked_image(input: LivestackImageInput) -> Dict[str, Any]:
+    """Get the current stacked image from the Livestack plugin.
+    
+    Args:
+        input: LivestackImageInput containing:
+            resize: Optional resize parameter for the image (e.g., 1920 for width)
+            format: Optional format (jpeg, png). Default is jpeg
+            quality: Optional quality for JPEG (0-100). Default is 90
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Image: Base64-encoded image data or image information
+        - Format: Image format used
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINALivestackError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        # Build query parameters
+        params = []
+        if input.resize is not None:
+            params.append(f"resize={input.resize}")
+        if input.format is not None:
+            params.append(f"format={input.format}")
+        if input.quality is not None:
+            params.append(f"quality={input.quality}")
+        
+        endpoint = "livestack/get-stacked-image"
+        if params:
+            endpoint += "?" + "&".join(params)
+        
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Stacked image retrieved successfully",
+            "Image": result.get("Response"),
+            "Format": input.format or "jpeg",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINALivestackError", str(e))
+
+@mcp.tool()
+async def nina_get_livestack_stacked_image_info() -> Dict[str, Any]:
+    """Get information about the current stacked image from the Livestack plugin.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - ImageInfo: Information about the stacked image (dimensions, statistics, etc.)
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINALivestackError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "livestack/get-stacked-image-info")
+        image_info = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Stacked image information retrieved successfully",
+            "ImageInfo": image_info,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINALivestackError", str(e))
+
+# ========================================
+# Framing Assistant Functions
+# ========================================
+
+@mcp.tool()
+async def nina_get_moon_separation(input: FramingAssistantMoonSeparationInput) -> Dict[str, Any]:
+    """Calculate the moon separation for the current time and location for given coordinates.
+    
+    Args:
+        input: FramingAssistantMoonSeparationInput containing:
+            ra: Right Ascension in degrees
+            dec: Declination in degrees
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Separation: Angular separation from the moon in degrees
+        - MoonPhase: Current moon phase description
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"astro-util/moon-separation?ra={input.ra}&dec={input.dec}"
+        result = await client._send_request("GET", endpoint)
+        response = result.get("Response", {})
+        
+        separation = response.get("Separation", 0)
+        moon_phase = response.get("MoonPhase", "Unknown")
+        
+        return {
+            "Success": True,
+            "Message": f"Moon separation: {separation:.2f}° (Phase: {moon_phase})",
+            "Separation": separation,
+            "MoonPhase": moon_phase,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+@mcp.tool()
+async def nina_get_framingassistant_info() -> Dict[str, Any]:
+    """Get information about the current framing assistant state and settings.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - FramingInfo: Current framing assistant settings and target information
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "framing/info")
+        framing_info = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Framing assistant information retrieved successfully",
+            "FramingInfo": framing_info,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+@mcp.tool()
+async def nina_set_framingassistant_source(input: FramingAssistantSetSourceInput) -> Dict[str, Any]:
+    """Set the source/target for the framing assistant.
+    
+    Args:
+        input: FramingAssistantSetSourceInput containing:
+            source: Source identifier or name (e.g., "M31", "NGC7000")
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"framing/set-source?source={input.source}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Framing assistant source set to '{input.source}'",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+@mcp.tool()
+async def nina_set_framingassistant_coordinates(input: FramingAssistantSetCoordinatesInput) -> Dict[str, Any]:
+    """Set the coordinates for the framing assistant.
+    
+    Args:
+        input: FramingAssistantSetCoordinatesInput containing:
+            ra: Right Ascension in degrees or hours
+            dec: Declination in degrees
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"framing/set-coordinates?ra={input.ra}&dec={input.dec}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Framing assistant coordinates set to RA={input.ra}, Dec={input.dec}",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+@mcp.tool()
+async def nina_framingassistant_slew() -> Dict[str, Any]:
+    """Slew the mount to the framing assistant target coordinates.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "framing/slew")
+        
+        return {
+            "Success": True,
+            "Message": "Mount slewing to framing assistant target",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+@mcp.tool()
+async def nina_set_framingassistant_rotation(input: FramingAssistantSetRotationInput) -> Dict[str, Any]:
+    """Set the camera rotation angle for the framing assistant.
+    
+    Args:
+        input: FramingAssistantSetRotationInput containing:
+            rotation: Rotation angle in degrees
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"framing/set-rotation?rotation={input.rotation}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Framing assistant rotation set to {input.rotation}°",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+@mcp.tool()
+async def nina_determine_framingassistant_rotation() -> Dict[str, Any]:
+    """Automatically determine the optimal camera rotation for the framing assistant target.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Rotation: Determined rotation angle in degrees
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFramingAssistantError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "framing/determine-rotation")
+        response = result.get("Response", {})
+        rotation = response.get("Rotation", 0) if isinstance(response, dict) else response
+        
+        return {
+            "Success": True,
+            "Message": f"Determined optimal rotation: {rotation}°",
+            "Rotation": rotation,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAFramingAssistantError", str(e))
+
+# ========================================
+# Profile Management Functions
+# ========================================
+
+@mcp.tool()
+async def nina_show_profile(input: ProfileShowInput) -> Dict[str, Any]:
+    """Show profile information - either the active profile or list of all profiles.
+    
+    Args:
+        input: ProfileShowInput containing:
+            active: Optional boolean. If True, shows active profile details. 
+                   If False or omitted, shows list of all available profiles.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - ProfileInfo: Active profile details or list of available profiles
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAProfileError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "profile/show"
+        if input.active is not None:
+            endpoint += f"?active={'true' if input.active else 'false'}"
+        
+        result = await client._send_request("GET", endpoint)
+        profile_info = result.get("Response", {})
+        
+        if input.active:
+            message = f"Active profile: {profile_info.get('Name', 'Unknown')}"
+        else:
+            message = "Retrieved list of available profiles"
+        
+        return {
+            "Success": True,
+            "Message": message,
+            "ProfileInfo": profile_info,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAProfileError", str(e))
+
+@mcp.tool()
+async def nina_change_profile_value(input: ProfileChangeValueInput) -> Dict[str, Any]:
+    """Change a profile setting value.
+    
+    Args:
+        input: ProfileChangeValueInput containing:
+            setting_path: Path to the setting (e.g., "CameraSettings.Gain", "FocuserSettings.AutoFocusStepSize")
+            value: New value for the setting
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAProfileError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"profile/change-profile-value?setting={input.setting_path}&value={input.value}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Profile setting '{input.setting_path}' changed to '{input.value}'",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAProfileError", str(e))
+
+@mcp.tool()
+async def nina_switch_profile(input: ProfileSwitchInput) -> Dict[str, Any]:
+    """Switch to a different NINA profile.
+    
+    Args:
+        input: ProfileSwitchInput containing:
+            profile_id: ID of the profile to switch to
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAProfileError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = f"profile/switch?id={input.profile_id}"
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": f"Switched to profile: {input.profile_id}",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAProfileError", str(e))
+
+@mcp.tool()
+async def nina_get_profile_horizon() -> Dict[str, Any]:
+    """Get the horizon definition from the current profile.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Horizon: Horizon data with azimuth and altitude points
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAProfileError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "profile/horizon")
+        horizon_data = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Horizon definition retrieved successfully",
+            "Horizon": horizon_data,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+
+    except Exception as e:
+        return create_error_response("NINAProfileError", str(e))
+
+# ========================================
+# Additional Flats Functions
+# ========================================
+
+@mcp.tool()
+async def nina_trained_flats(input: TrainedFlatsInput) -> Dict[str, Any]:
+    """Start trained flats capture using trained exposure settings.
+    
+    Args:
+        input: TrainedFlatsInput containing:
+            filter_name: Optional filter name for trained flats
+            binning: Optional binning mode
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAFlatsError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        params = []
+        if input.filter_name:
+            params.append(f"filter={input.filter_name}")
+        if input.binning:
+            params.append(f"binning={input.binning}")
+        
+        endpoint = "flats/trained"
+        if params:
+            endpoint += "?" + "&".join(params)
+        
+        result = await client._send_request("GET", endpoint)
+        
+        return {
+            "Success": True,
+            "Message": "Trained flats capture started",
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAFlatsError", str(e))
+
+# ========================================
+# Plugin Functions
+# ========================================
+
+@mcp.tool()
+async def nina_get_plugin_settings(input: PluginSettingsInput) -> Dict[str, Any]:
+    """Get plugin settings from NINA.
+    
+    Args:
+        input: PluginSettingsInput containing:
+            plugin_id: Optional plugin ID
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Settings: Plugin settings data
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAPluginError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        endpoint = "plugin/plugin-settings"
+        if input.plugin_id:
+            endpoint += f"?id={input.plugin_id}"
+        
+        result = await client._send_request("GET", endpoint)
+        settings = result.get("Response", {})
+        
+        return {
+            "Success": True,
+            "Message": "Plugin settings retrieved successfully",
+            "Settings": settings,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAPluginError", str(e))
+
+# ========================================
+# Event Websocket Functions
+# ========================================
+
+@mcp.tool()
+async def nina_get_event_history() -> Dict[str, Any]:
+    """Get event history from NINA event websocket.
+    
+    Returns:
+        Dict containing:
+        - Success status
+        - Message about the operation
+        - Events: Event history data
+        - Type of response
+    """
+    try:
+        client = await get_client()
+        if not client._connected:
+            return create_error_response(
+                "NINAEventError",
+                "Not connected to NINA server. Please connect first using nina_connect.",
+                {"StatusCode": 401}
+            )
+
+        result = await client._send_request("GET", "event-websocket/event-history")
+        events = result.get("Response", [])
+        
+        return {
+            "Success": True,
+            "Message": f"Retrieved {len(events) if isinstance(events, list) else 'event'} history",
+            "Events": events,
+            "Details": result,
+            "Type": "NINA_API"
+        }
+    except Exception as e:
+        return create_error_response("NINAEventError", str(e))
 
 class HelpInput(BaseModel):
     """Input model for getting help about specific tools"""

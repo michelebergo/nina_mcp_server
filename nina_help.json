@@ -69,6 +69,50 @@
         "utility": {
             "title": "Utility Tools",
             "description": "General utility tools like time functions and wait operations"
+        },
+        "switch": {
+            "title": "Switch Control",
+            "description": "Tools for controlling generic ASCOM switch devices such as power boxes, dew controllers, and smart relays"
+        },
+        "weather": {
+            "title": "Weather Station",
+            "description": "Tools for connecting to and monitoring weather station devices for comprehensive environmental data"
+        },
+        "safetymonitor": {
+            "title": "Safety Monitor",
+            "description": "Tools for connecting to and monitoring safety devices to ensure safe observatory operations"
+        },
+        "livestack": {
+            "title": "Livestack Plugin",
+            "description": "Tools for controlling the Livestack plugin to get real-time stacked images during imaging sessions"
+        },
+        "framingassistant": {
+            "title": "Framing Assistant",
+            "description": "Tools for framing deep-sky objects, calculating moon separation, and determining optimal camera rotation"
+        },
+        "profile": {
+            "title": "Profile Management",
+            "description": "Tools for managing NINA profiles, switching between profiles, and modifying profile settings"
+        },
+        "platesolve": {
+            "title": "Plate Solving",
+            "description": "Standalone plate solving tools for astrometric calibration, mount synchronization, and precise centering. Note: basic plate solving is also integrated into nina_capture_image."
+        },
+        "application": {
+            "title": "Application Management",
+            "description": "Tools for managing NINA application state, including version information, startup time, tab navigation, and log retrieval"
+        },
+        "plugin": {
+            "title": "Plugin Management",
+            "description": "Tools for accessing plugin settings and configurations from NINA plugins"
+        },
+        "event": {
+            "title": "Event Monitoring",
+            "description": "Tools for monitoring NINA events through the websocket event system to track application state changes"
+        },
+        "sequence": {
+            "title": "Sequence Control",
+            "description": "Tools for managing NINA Advanced Sequences, including starting, stopping, loading sequences from files, and retrieving sequence state and structure"
         }
     },
     "tool_help": {
@@ -597,6 +641,117 @@
                 }
             ]
         },
+        "nina_set_camera_gain": {
+            "title": "Set Camera Gain",
+            "description": "Set the camera's gain value for controlling sensor sensitivity.",
+            "parameters": {
+                "gain": {
+                    "type": "integer",
+                    "description": "Gain value (range depends on camera model)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating gain set successfully",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Set Low Gain",
+                    "description": "Set camera gain to 100 for low sensitivity",
+                    "code": "result = await nina_set_camera_gain(CameraGainInput(gain=100))"
+                },
+                {
+                    "title": "Set High Gain",
+                    "description": "Set camera gain to 300 for high sensitivity",
+                    "code": "result = await nina_set_camera_gain(CameraGainInput(gain=300))"
+                }
+            ]
+        },
+        "nina_set_camera_offset": {
+            "title": "Set Camera Offset",
+            "description": "Set the camera's offset value for controlling the baseline signal level.",
+            "parameters": {
+                "offset": {
+                    "type": "integer",
+                    "description": "Offset value (range depends on camera model)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating offset set successfully",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Set Offset",
+                    "description": "Set camera offset to 50",
+                    "code": "result = await nina_set_camera_offset(CameraOffsetInput(offset=50))"
+                }
+            ]
+        },
+        "nina_set_camera_usb_limit": {
+            "title": "Set Camera USB Bandwidth Limit",
+            "description": "Set the camera's USB bandwidth limit to reduce download artifacts and improve stability.",
+            "parameters": {
+                "usb_limit": {
+                    "type": "integer",
+                    "description": "USB bandwidth limit value (range depends on camera model)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating USB limit set successfully",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Set USB Limit",
+                    "description": "Set camera USB bandwidth limit to 40",
+                    "code": "result = await nina_set_camera_usb_limit(CameraUSBLimitInput(usb_limit=40))"
+                }
+            ]
+        },
+        "nina_set_camera_subsample": {
+            "title": "Set Camera Subsampling",
+            "description": "Set the camera's subsampling for faster readout with reduced resolution.",
+            "parameters": {
+                "x": {
+                    "type": "integer",
+                    "description": "X-axis subsample value (1 for no subsampling, 2 for half resolution, etc.)",
+                    "required": true
+                },
+                "y": {
+                    "type": "integer",
+                    "description": "Y-axis subsample value (1 for no subsampling, 2 for half resolution, etc.)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating subsample set successfully",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "No Subsampling",
+                    "description": "Set camera to full resolution (no subsampling)",
+                    "code": "result = await nina_set_camera_subsample(CameraSubsampleInput(x=1, y=1))"
+                },
+                {
+                    "title": "2x2 Subsampling",
+                    "description": "Set camera to half resolution for faster readout",
+                    "code": "result = await nina_set_camera_subsample(CameraSubsampleInput(x=2, y=2))"
+                }
+            ]
+        },
         "nina_get_capture_statistics": {
             "title": "Get Capture Statistics",
             "description": "Get statistics about the last captured image including star count, HFR, and other metrics.",
@@ -1068,6 +1223,81 @@
                 }
             ]
         },
+        "nina_start_autofocus": {
+            "title": "Start Autofocus",
+            "description": "Start an autofocus routine in NINA astronomy software.",
+            "parameters": {
+                "method": {
+                    "type": "string",
+                    "description": "Optional autofocus method (HFR, Contrast, etc.)",
+                    "required": false
+                },
+                "auto_focus_inner_crop_ratio": {
+                    "type": "float",
+                    "description": "Optional inner crop ratio for AF (0-1)",
+                    "required": false
+                },
+                "auto_focus_outer_crop_ratio": {
+                    "type": "float",
+                    "description": "Optional outer crop ratio for AF (0-1)",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating autofocus started",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Start Basic Autofocus",
+                    "description": "Start autofocus with default settings",
+                    "code": "result = await nina_start_autofocus()"
+                },
+                {
+                    "title": "Start with Custom Crop",
+                    "description": "Start autofocus with custom crop ratios",
+                    "code": "result = await nina_start_autofocus(AutofocusInput(auto_focus_inner_crop_ratio=0.3, auto_focus_outer_crop_ratio=0.8))"
+                }
+            ]
+        },
+        "nina_cancel_autofocus": {
+            "title": "Cancel Autofocus",
+            "description": "Cancel the current autofocus routine in NINA astronomy software.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating autofocus cancelled",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Cancel Autofocus",
+                    "description": "Stop the running autofocus routine",
+                    "code": "result = await nina_cancel_autofocus()"
+                }
+            ]
+        },
+        "nina_get_autofocus_status": {
+            "title": "Get Autofocus Status",
+            "description": "Get the status of the current autofocus routine in NINA astronomy software.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating status retrieved",
+                "Message": "Operation status message",
+                "Status": "Autofocus status information (running, progress, etc.)",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Check Autofocus Progress",
+                    "description": "Get current autofocus status",
+                    "code": "result = await nina_get_autofocus_status()"
+                }
+            ]
+        },
         "nina_connect_filterwheel": {
             "title": "Connect Filter Wheel",
             "description": "Connect to a filter wheel device in NINA astronomy software.",
@@ -1421,6 +1651,69 @@
                     "description": "Sync rotator to 180 degrees",
                     "code": "result = await nina_sync_rotator(RotatorSyncInput(position=180.0))"
                 }
+            ]
+        },
+        "nina_move_rotator_mechanically": {
+            "title": "Move Rotator Mechanically",
+            "description": "Move the rotator to a specific mechanical position in degrees.",
+            "parameters": {
+                "position": {
+                    "type": "float",
+                    "description": "Target mechanical position in degrees",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Move to Mechanical Position",
+                "description": "Move rotator mechanically to 45 degrees",
+                "code": "result = await nina_move_rotator_mechanically(RotatorMoveMechanicallyInput(position=45.0))"
+            }
+            ]
+        },
+        "nina_reverse_rotator": {
+            "title": "Toggle Rotator Reverse",
+            "description": "Toggle the rotator reverse state. This changes the direction of rotation.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Toggle Reverse State",
+                "description": "Toggle the rotator reverse direction",
+                "code": "result = await nina_reverse_rotator()"
+            }
+            ]
+        },
+        "nina_set_rotator_range": {
+            "title": "Set Rotator Range",
+            "description": "Set the rotator's mechanical range start position in degrees.",
+            "parameters": {
+                "range_start": {
+                    "type": "float",
+                    "description": "Start of mechanical range in degrees",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Set Range Start",
+                "description": "Set the rotator range start position",
+                "code": "result = await nina_set_rotator_range(RotatorSetRangeInput(range_start=0.0))"
+            }
             ]
         },
         "nina_connect_dome": {
@@ -2219,6 +2512,479 @@
                 }
             ]
         },
+        "nina_auto_brightness_flats": {
+            "title": "Auto-Brightness Flats",
+            "description": "Start capturing flats with automatic flat panel brightness adjustment for a fixed exposure time. NINA will find the optimal panel brightness to achieve target histogram values.",
+            "parameters": {
+                "count": {
+                    "type": "integer",
+                    "description": "Number of flats to capture",
+                    "required": true
+                },
+                "exposureTime": {
+                    "type": "float",
+                    "description": "Fixed exposure time in seconds",
+                    "required": true
+                },
+                "minBrightness": {
+                    "type": "integer",
+                    "description": "Minimum flat panel brightness (0-99)",
+                    "required": false
+                },
+                "maxBrightness": {
+                    "type": "integer",
+                    "description": "Maximum flat panel brightness (1-100)",
+                    "required": false
+                },
+                "histogramMean": {
+                    "type": "float",
+                    "description": "Target histogram mean value (0-1)",
+                    "required": false
+                },
+                "meanTolerance": {
+                    "type": "float",
+                    "description": "Tolerance for histogram mean (0-1)",
+                    "required": false
+                },
+                "filterId": {
+                    "type": "integer",
+                    "description": "ID of the filter to use",
+                    "required": false
+                },
+                "binning": {
+                    "type": "string",
+                    "description": "Binning mode (e.g., '1x1', '2x2')",
+                    "required": false
+                },
+                "gain": {
+                    "type": "integer",
+                    "description": "Camera gain setting",
+                    "required": false
+                },
+                "offset": {
+                    "type": "integer",
+                    "description": "Camera offset setting",
+                    "required": false
+                },
+                "keepClosed": {
+                    "type": "boolean",
+                    "description": "Whether to keep flat panel closed after completion",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating flats started",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Basic Auto-Brightness Flats",
+                    "description": "Capture 20 flats with 2-second exposure, auto-adjusting panel brightness",
+                    "code": "result = await nina_auto_brightness_flats(AutoBrightnessFlatsInput(count=20, exposureTime=2.0))"
+                },
+                {
+                    "title": "Advanced Auto-Brightness Flats",
+                    "description": "Capture flats with brightness range limits and specific histogram target",
+                    "code": "result = await nina_auto_brightness_flats(AutoBrightnessFlatsInput(count=15, exposureTime=1.5, minBrightness=10, maxBrightness=90, histogramMean=0.5, binning='2x2'))"
+                }
+            ]
+        },
+        "nina_auto_exposure_flats": {
+            "title": "Auto-Exposure Flats",
+            "description": "Start capturing flats with automatic exposure time adjustment for a fixed flat panel brightness. NINA will find the optimal exposure duration to achieve target histogram values.",
+            "parameters": {
+                "count": {
+                    "type": "integer",
+                    "description": "Number of flats to capture",
+                    "required": true
+                },
+                "brightness": {
+                    "type": "float",
+                    "description": "Fixed flat panel brightness (0-100)",
+                    "required": true
+                },
+                "minExposure": {
+                    "type": "float",
+                    "description": "Minimum exposure time in seconds",
+                    "required": false
+                },
+                "maxExposure": {
+                    "type": "float",
+                    "description": "Maximum exposure time in seconds",
+                    "required": false
+                },
+                "histogramMean": {
+                    "type": "float",
+                    "description": "Target histogram mean value (0-1)",
+                    "required": false
+                },
+                "meanTolerance": {
+                    "type": "float",
+                    "description": "Tolerance for histogram mean (0-1)",
+                    "required": false
+                },
+                "filterId": {
+                    "type": "integer",
+                    "description": "ID of the filter to use",
+                    "required": false
+                },
+                "binning": {
+                    "type": "string",
+                    "description": "Binning mode (e.g., '1x1', '2x2')",
+                    "required": false
+                },
+                "gain": {
+                    "type": "integer",
+                    "description": "Camera gain setting",
+                    "required": false
+                },
+                "offset": {
+                    "type": "integer",
+                    "description": "Camera offset setting",
+                    "required": false
+                },
+                "keepClosed": {
+                    "type": "boolean",
+                    "description": "Whether to keep flat panel closed after completion",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating flats started",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Basic Auto-Exposure Flats",
+                    "description": "Capture 20 flats with brightness 50, auto-adjusting exposure time",
+                    "code": "result = await nina_auto_exposure_flats(AutoExposureFlatsInput(count=20, brightness=50.0))"
+                },
+                {
+                    "title": "Advanced Auto-Exposure Flats",
+                    "description": "Capture flats with exposure time range limits and specific histogram target",
+                    "code": "result = await nina_auto_exposure_flats(AutoExposureFlatsInput(count=15, brightness=60.0, minExposure=0.5, maxExposure=10.0, histogramMean=0.5, binning='2x2'))"
+                }
+            ]
+        },
+        "nina_trained_dark_flat": {
+            "title": "Trained Dark Flat",
+            "description": "Start capturing dark flats based on previously trained settings in NINA. Uses the exposure time and other parameters learned from prior flat field training sessions.",
+            "parameters": {
+                "count": {
+                    "type": "integer",
+                    "description": "Number of dark flats to capture",
+                    "required": true
+                },
+                "filterId": {
+                    "type": "integer",
+                    "description": "ID of the filter to use",
+                    "required": false
+                },
+                "binning": {
+                    "type": "string",
+                    "description": "Binning mode (e.g., '1x1', '2x2')",
+                    "required": false
+                },
+                "gain": {
+                    "type": "integer",
+                    "description": "Camera gain setting",
+                    "required": false
+                },
+                "offset": {
+                    "type": "integer",
+                    "description": "Camera offset setting",
+                    "required": false
+                },
+                "keepClosed": {
+                    "type": "boolean",
+                    "description": "Whether to keep flat panel closed after completion",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating dark flats started",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Basic Trained Dark Flats",
+                    "description": "Capture 20 dark flats using trained parameters",
+                    "code": "result = await nina_trained_dark_flat(TrainedDarkFlatInput(count=20))"
+                },
+                {
+                    "title": "Trained Dark Flats with Filter",
+                    "description": "Capture dark flats for specific filter using trained parameters",
+                    "code": "result = await nina_trained_dark_flat(TrainedDarkFlatInput(count=15, filterId=2, binning='2x2', gain=100))"
+                }
+            ]
+        },
+        "nina_sequence_start": {
+            "title": "Start Sequence",
+            "description": "Start the Advanced Sequence in NINA astronomy software. The sequence must be initialized first.",
+            "parameters": {
+                "skipValidation": {
+                    "type": "boolean",
+                    "description": "Skip validation of the sequence before starting",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating sequence started",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Start Sequence with Validation",
+                    "description": "Start the sequence with normal validation",
+                    "code": "result = await nina_sequence_start()"
+                },
+                {
+                    "title": "Start Sequence Skipping Validation",
+                    "description": "Start the sequence without validation checks",
+                    "code": "result = await nina_sequence_start(SequenceStartInput(skipValidation=True))"
+                }
+            ]
+        },
+        "nina_sequence_stop": {
+            "title": "Stop Sequence",
+            "description": "Stop the currently running Advanced Sequence in NINA astronomy software.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating sequence stopped",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Stop Sequence",
+                    "description": "Stop the currently running sequence",
+                    "code": "result = await nina_sequence_stop()"
+                }
+            ]
+        },
+        "nina_sequence_load": {
+            "title": "Load Sequence from File",
+            "description": "Load a sequence from a file in the default sequence folders. Use nina_sequence_list_available to get available sequence names.",
+            "parameters": {
+                "sequenceName": {
+                    "type": "string",
+                    "description": "Name of the sequence to load (from default sequence folders)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating sequence loaded",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Load Sequence by Name",
+                    "description": "Load a sequence file named 'Orion'",
+                    "code": "result = await nina_sequence_load(SequenceLoadInput(sequenceName='Orion'))"
+                },
+                {
+                    "title": "Load Andromeda Sequence",
+                    "description": "Load a sequence for Andromeda galaxy",
+                    "code": "result = await nina_sequence_load(SequenceLoadInput(sequenceName='Andromeda M31'))"
+                }
+            ]
+        },
+        "nina_sequence_json": {
+            "title": "Get Sequence as JSON",
+            "description": "Get the current sequence structure as JSON. This endpoint is generally advised to use over state since it gives more reliable results. Returns sequence structure with Conditions, Items, Triggers, Status, and Name.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating data retrieved",
+                "Message": "Operation status message",
+                "Details": {
+                    "Response": "Array of sequence containers with Conditions, Items, Triggers, Status, Name"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get Sequence JSON",
+                    "description": "Retrieve current sequence structure as JSON",
+                    "code": "result = await nina_sequence_json()"
+                }
+            ]
+        },
+        "nina_sequence_state": {
+            "title": "Get Complete Sequence State",
+            "description": "Get the complete sequence state in elaborate format with plugin support. This is similar to the json endpoint, but more detailed. Use json endpoint for more reliable results unless you need the extra plugin functionality.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating data retrieved",
+                "Message": "Operation status message",
+                "Details": {
+                    "Response": "Array of sequence containers with full plugin support and detailed structure"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get Full Sequence State",
+                    "description": "Retrieve complete sequence state with all details",
+                    "code": "result = await nina_sequence_state()"
+                }
+            ]
+        },
+        "nina_sequence_list_available": {
+            "title": "List Available Sequences",
+            "description": "List all sequence files available in the default sequence folders. Returns an array of sequence names that can be loaded with nina_sequence_load.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating data retrieved",
+                "Message": "Operation status message",
+                "Details": {
+                    "Response": "Array of sequence names (strings)"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "List Available Sequences",
+                    "description": "Get all available sequence names",
+                    "code": "result = await nina_sequence_list_available()"
+                }
+            ]
+        },
+        "nina_sequence_edit": {
+            "title": "Edit Sequence Property",
+            "description": "Edit a property in the current sequence. This is experimental and works with simple types (strings, numbers) but may not work with enums or objects. Use sequence/state as reference for paths, not sequence/json.",
+            "parameters": {
+                "path": {
+                    "type": "string",
+                    "description": "Path to property using format 'Container-Items-Index-Property'. Use GlobalTriggers, Start, Imaging, End for root containers. Example: 'Imaging-Items-0-Items-0-ExposureTime'",
+                    "required": true
+                },
+                "value": {
+                    "type": "string",
+                    "description": "New value for the property",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating property updated",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Edit Exposure Time",
+                    "description": "Set exposure time to 20 seconds in a DSO container",
+                    "code": "result = await nina_sequence_edit(SequenceEditInput(path='Imaging-Items-0-Items-0-ExposureTime', value='20'))"
+                },
+                {
+                    "title": "Edit Target Name",
+                    "description": "Change target name in the sequence",
+                    "code": "result = await nina_sequence_edit(SequenceEditInput(path='Imaging-Items-0-Name', value='M31 Andromeda'))"
+                }
+            ]
+        },
+        "nina_sequence_reset": {
+            "title": "Reset Sequence",
+            "description": "Reset the Advanced Sequence to its initial state.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating sequence reset",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Reset Sequence",
+                    "description": "Reset the sequence to initial state",
+                    "code": "result = await nina_sequence_reset()"
+                }
+            ]
+        },
+        "nina_sequence_set_target": {
+            "title": "Set Sequence Target",
+            "description": "Set the target of a target container in the sequence with coordinates and rotation.",
+            "parameters": {
+                "name": {
+                    "type": "string",
+                    "description": "Target name",
+                    "required": true
+                },
+                "ra": {
+                    "type": "float",
+                    "description": "Right Ascension in degrees",
+                    "required": true
+                },
+                "dec": {
+                    "type": "float",
+                    "description": "Declination in degrees",
+                    "required": true
+                },
+                "rotation": {
+                    "type": "float",
+                    "description": "Target rotation in degrees",
+                    "required": true
+                },
+                "index": {
+                    "type": "integer",
+                    "description": "Index of the target container to update (minimum 0)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating target set",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Set Orion Target",
+                    "description": "Set target to Orion nebula coordinates",
+                    "code": "result = await nina_sequence_set_target(SequenceSetTargetInput(name='Orion', ra=83.82, dec=-5.39, rotation=0.0, index=0))"
+                },
+                {
+                    "title": "Set Andromeda Target",
+                    "description": "Set target to M31 Andromeda galaxy",
+                    "code": "result = await nina_sequence_set_target(SequenceSetTargetInput(name='M31', ra=10.68, dec=41.27, rotation=180.0, index=0))"
+                }
+            ]
+        },
+        "nina_sequence_load_json": {
+            "title": "Load Sequence from JSON",
+            "description": "Load a sequence from JSON data supplied in the request. This allows programmatic creation and loading of sequences.",
+            "parameters": {
+                "sequenceJSON": {
+                    "type": "string",
+                    "description": "JSON string representing the complete sequence structure",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating sequence loaded",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Load Custom Sequence",
+                    "description": "Load a sequence from JSON structure",
+                    "code": "result = await nina_sequence_load_json(SequenceLoadJSONInput(sequenceJSON='{\"Name\":\"Test\",\"Items\":[],\"Triggers\":[],\"Conditions\":[]}'))"
+                }
+            ]
+        },
         "nina_measure_sky_brightness": {
             "title": "Measure Sky Brightness",
             "description": "Take a test exposure to measure current sky brightness for sky flats.",
@@ -2696,6 +3462,1270 @@
                     "title": "Altitude Over Time",
                     "description": "Get altitude over next 12 hours",
                     "code": "result = await nina_calculate_target_altitude(TargetAltitudeInput(ra=0.712, dec=41.27, range_hours=12.0))"
+                }
+            ]
+        },
+        "nina_list_switch_devices": {
+            "title": "List Switch Devices",
+            "description": "List all available ASCOM switch devices. This also triggers a device rescan.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Devices": "List of available switch devices",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "List Switches",
+                    "description": "Get all available switch devices",
+                    "code": "result = await nina_list_switch_devices()"
+                }
+            ]
+        },
+        "nina_connect_switch": {
+            "title": "Connect Switch",
+            "description": "Connect to a specific switch device.",
+            "parameters": {
+            "device_id": {
+                "type": "string",
+                "description": "DeviceId from nina_list_switch_devices",
+                "required": true
+            }
+            },
+            "returns": {
+                "Success": "Boolean indicating connection success",
+                "Message": "Connection status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                "title": "Connect Switch",
+                "description": "Connect to a SVBONY or Pegasus switch",
+                "code": "result = await nina_connect_switch(SwitchConnectInput(device_id='ASCOM.SVBONY.Switch'))"
+                }
+            ]
+        },
+        "nina_disconnect_switch": {
+            "title": "Disconnect Switch",
+            "description": "Disconnect the switch device from NINA astronomy software.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating disconnection success",
+                "Message": "Disconnection status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Disconnect Switch",
+                    "description": "Disconnect the current switch device",
+                    "code": "result = await nina_disconnect_switch()"
+                }
+            ]
+        },
+        "nina_get_switch_channels": {
+            "title": "Get Switch Channels",
+            "description": "Retrieve all writable and read-only channels from the connected switch device. Writable channel index corresponds to the position in WritableSwitches[].",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Device": "Switch device metadata",
+                "Writable": "List of writable switch channels",
+                "Readonly": "List of read-only sensor channels",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Channels",
+                "description": "Inspect available power outputs and sensors",
+                "code": "result = await nina_get_switch_channels()"
+            }
+            ]
+        },
+        "nina_set_switch": {
+            "title": "Set Switch Channel",
+            "description": "Set a writable switch channel by index. The index refers to the position in WritableSwitches[].",
+            "parameters": {
+                "index": {
+                    "type": "integer",
+                    "description": "Writable channel index",
+                    "required": true
+                },
+                "value": {
+                    "type": "number",
+                    "description": "Target value (0/1 for binary or analog value)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Applied": "Applied value after clamping",
+                "Readback": "Channel state after setting",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Turn Output On",
+                "description": "Enable power output 0",
+                "code": "result = await nina_set_switch(SwitchSetInput(index=0, value=1))"
+            }
+            ]
+        },
+        "nina_connect_weather": {
+            "title": "Connect Weather Station",
+            "description": "Connect to a weather station device to monitor environmental conditions.",
+            "parameters": {
+                "device_id": {
+                    "type": "string",
+                    "description": "Optional device ID to connect to. If not provided, connects to the default device.",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Connection details and response from NINA",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Connect Default Weather Station",
+                "description": "Connect to the default weather station",
+                "code": "result = await nina_connect_weather(WeatherConnectInput())"
+            },
+            {
+                "title": "Connect Specific Weather Station",
+                "description": "Connect to a specific weather station by device ID",
+                "code": "result = await nina_connect_weather(WeatherConnectInput(device_id='ASCOM.Simulator.ObservingConditions'))"
+            }
+            ]
+        },
+        "nina_disconnect_weather": {
+            "title": "Disconnect Weather Station",
+            "description": "Disconnect from the currently connected weather station device.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Disconnection details and response from NINA",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Disconnect Weather Station",
+                "description": "Disconnect from the connected weather station",
+                "code": "result = await nina_disconnect_weather()"
+            }
+            ]
+        },
+        "nina_get_weather_info": {
+            "title": "Get Weather Information",
+            "description": "Get comprehensive weather station information and current environmental conditions. Returns extensive weather data including temperature, humidity, wind, cloud cover, sky conditions, and more.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "WeatherData": {
+                    "AveragePeriod": "Time period for averaging measurements (hours)",
+                    "CloudCover": "Cloud cover percentage",
+                    "DewPoint": "Dew point temperature (°C)",
+                    "Humidity": "Relative humidity percentage",
+                    "Pressure": "Atmospheric pressure (hPa)",
+                    "RainRate": "Rain rate (mm/hour)",
+                    "SkyBrightness": "Sky brightness (lux)",
+                    "SkyQuality": "Sky quality measurement",
+                    "SkyTemperature": "Sky temperature (°C)",
+                    "StarFWHM": "Star FWHM measurement (arcseconds)",
+                    "Temperature": "Ambient temperature (°C)",
+                    "WindDirection": "Wind direction (degrees)",
+                    "WindGust": "Wind gust speed (m/s)",
+                    "WindSpeed": "Average wind speed (m/s)"
+                },
+                "DeviceInfo": {
+                    "Id": "Device identifier",
+                    "Name": "Device name",
+                    "DisplayName": "Device display name",
+                    "Connected": "Connection status",
+                    "Description": "Device description",
+                    "DriverInfo": "Driver information",
+                    "DriverVersion": "Driver version"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Current Weather",
+                "description": "Retrieve all current weather conditions",
+                "code": "result = await nina_get_weather_info()"
+            }
+            ]
+        },
+        "nina_list_weather_sources": {
+            "title": "List Weather Sources",
+            "description": "List all available weather station sources/devices that can be connected to NINA.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message with count",
+                "Sources": "List of available weather station devices with their details",
+                "Count": "Number of available weather sources",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "List All Weather Sources",
+                "description": "Get a list of all available weather station devices",
+                "code": "result = await nina_list_weather_sources()"
+            }
+            ]
+        },
+        "nina_rescan_weather_sources": {
+            "title": "Rescan Weather Sources",
+            "description": "Rescan for available weather station devices and return an updated list. Useful when a new weather station has been connected or configured.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message with count",
+                "Sources": "Updated list of available weather station devices",
+                "Count": "Number of weather sources found after rescan",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Rescan for Weather Stations",
+                "description": "Rescan and get updated list of available weather stations",
+                "code": "result = await nina_rescan_weather_sources()"
+            }
+            ]
+        },
+        "nina_connect_safetymonitor": {
+            "title": "Connect Safety Monitor",
+            "description": "Connect to a safety monitor device for monitoring observatory safety conditions.",
+            "parameters": {
+                "device_id": {
+                    "type": "string",
+                    "description": "Optional device ID to connect to. If not provided, connects to the default device.",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Connection details and response from NINA",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Connect Default Safety Monitor",
+                "description": "Connect to the default safety monitor",
+                "code": "result = await nina_connect_safetymonitor(SafetyMonitorConnectInput())"
+            },
+            {
+                "title": "Connect Specific Safety Monitor",
+                "description": "Connect to a specific safety monitor by device ID",
+                "code": "result = await nina_connect_safetymonitor(SafetyMonitorConnectInput(device_id='ASCOM.Simulator.SafetyMonitor'))"
+            }
+            ]
+        },
+        "nina_disconnect_safetymonitor": {
+            "title": "Disconnect Safety Monitor",
+            "description": "Disconnect from the currently connected safety monitor device.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Disconnection details and response from NINA",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Disconnect Safety Monitor",
+                "description": "Disconnect from the connected safety monitor",
+                "code": "result = await nina_disconnect_safetymonitor()"
+            }
+            ]
+        },
+        "nina_get_safetymonitor_info": {
+            "title": "Get Safety Monitor Information",
+            "description": "Get comprehensive safety monitor information and current safety status. Critical for determining if conditions are safe for observatory operations.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message indicating SAFE or UNSAFE",
+                "IsSafe": "Boolean indicating if conditions are safe for operation",
+                "DeviceInfo": {
+                    "Id": "Device identifier",
+                    "Name": "Device name",
+                    "DisplayName": "Device display name",
+                    "Connected": "Connection status",
+                    "Description": "Device description",
+                    "DriverInfo": "Driver information",
+                    "DriverVersion": "Driver version"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Check Safety Status",
+                "description": "Retrieve current safety status before operations",
+                "code": "result = await nina_get_safetymonitor_info()"
+            }
+            ]
+        },
+        "nina_list_safetymonitor_devices": {
+            "title": "List Safety Monitor Devices",
+            "description": "List all available safety monitor devices that can be connected to NINA.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message with count",
+                "Devices": "List of available safety monitor devices with their details",
+                "Count": "Number of available safety monitor devices",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "List All Safety Monitors",
+                "description": "Get a list of all available safety monitor devices",
+                "code": "result = await nina_list_safetymonitor_devices()"
+            }
+            ]
+        },
+        "nina_rescan_safetymonitor_devices": {
+            "title": "Rescan Safety Monitor Devices",
+            "description": "Rescan for available safety monitor devices and return an updated list. Useful when a new safety monitor has been connected or configured.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message with count",
+                "Devices": "Updated list of available safety monitor devices",
+                "Count": "Number of safety monitor devices found after rescan",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Rescan for Safety Monitors",
+                "description": "Rescan and get updated list of available safety monitors",
+                "code": "result = await nina_rescan_safetymonitor_devices()"
+            }
+            ]
+        },
+        "nina_get_livestack_status": {
+            "title": "Get Livestack Status",
+            "description": "Get the current status of the Livestack plugin. Requires Livestack >= v1.0.1.7. Returns the last reported status even if the plugin is not installed.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Status": "Current livestack status ('running' or 'stopped')",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Check Livestack Status",
+                "description": "Get the current status of the livestack",
+                "code": "result = await nina_get_livestack_status()"
+            }
+            ]
+        },
+        "nina_start_livestack": {
+            "title": "Start Livestack",
+            "description": "Start the Livestack plugin to begin real-time stacking. Requires Livestack >= v1.0.0.9. This method simply issues a start command and cannot fail even if the plugin is not installed.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Start Livestack",
+                "description": "Start the livestack plugin",
+                "code": "result = await nina_start_livestack()"
+            }
+            ]
+        },
+        "nina_stop_livestack": {
+            "title": "Stop Livestack",
+            "description": "Stop the Livestack plugin. Requires Livestack >= v1.0.0.9. This method simply issues a stop command and cannot fail even if the plugin is not installed.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Stop Livestack",
+                "description": "Stop the livestack plugin",
+                "code": "result = await nina_stop_livestack()"
+            }
+            ]
+        },
+        "nina_get_livestack_available_stacks": {
+            "title": "Get Available Stacks",
+            "description": "Get list of available stacks from the Livestack plugin.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message with count",
+                "AvailableStacks": "List of available stack identifiers",
+                "Count": "Number of available stacks",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "List Available Stacks",
+                "description": "Get all available livestacks",
+                "code": "result = await nina_get_livestack_available_stacks()"
+            }
+            ]
+        },
+        "nina_get_livestack_stacked_image": {
+            "title": "Get Stacked Image",
+            "description": "Get the current stacked image from the Livestack plugin with optional formatting options.",
+            "parameters": {
+                "resize": {
+                    "type": "integer",
+                    "description": "Optional resize parameter for the image (e.g., 1920 for width)",
+                    "required": false
+                },
+                "format": {
+                    "type": "string",
+                    "description": "Optional format (jpeg, png). Default is jpeg",
+                    "required": false
+                },
+                "quality": {
+                    "type": "integer",
+                    "description": "Optional quality for JPEG (0-100). Default is 90",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Image": "Base64-encoded image data",
+                "Format": "Image format used",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Stacked Image (Default)",
+                "description": "Get the stacked image with default settings",
+                "code": "result = await nina_get_livestack_stacked_image(LivestackImageInput())"
+            },
+            {
+                "title": "Get Resized Stacked Image",
+                "description": "Get a resized stacked image in PNG format",
+                "code": "result = await nina_get_livestack_stacked_image(LivestackImageInput(resize=1920, format='png'))"
+            }
+            ]
+        },
+        "nina_get_livestack_stacked_image_info": {
+            "title": "Get Stacked Image Info",
+            "description": "Get information about the current stacked image from the Livestack plugin (dimensions, statistics, etc.).",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "ImageInfo": "Information about the stacked image",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Image Information",
+                "description": "Get information about the current stacked image",
+                "code": "result = await nina_get_livestack_stacked_image_info()"
+            }
+            ]
+        },
+        "nina_get_moon_separation": {
+            "title": "Calculate Moon Separation",
+            "description": "Calculate the moon separation for the current time and location for given coordinates. Useful for determining if the moon will interfere with imaging.",
+            "parameters": {
+                "ra": {
+                    "type": "number",
+                    "description": "Right Ascension in degrees",
+                    "required": true
+                },
+                "dec": {
+                    "type": "number",
+                    "description": "Declination in degrees",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status with separation and phase",
+                "Separation": "Angular separation from the moon in degrees",
+                "MoonPhase": "Current moon phase description",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Check Moon Separation for M31",
+                "description": "Calculate how far the Andromeda Galaxy is from the moon",
+                "code": "result = await nina_get_moon_separation(FramingAssistantMoonSeparationInput(ra=10.68, dec=41.27))"
+            }
+            ]
+        },
+        "nina_get_framingassistant_info": {
+            "title": "Get Framing Assistant Info",
+            "description": "Get information about the current framing assistant state and settings.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "FramingInfo": "Current framing assistant settings and target information",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Framing Assistant State",
+                "description": "Retrieve current framing assistant information",
+                "code": "result = await nina_get_framingassistant_info()"
+            }
+            ]
+        },
+        "nina_set_framingassistant_source": {
+            "title": "Set Framing Source",
+            "description": "Set the source/target for the framing assistant using object name or catalog identifier.",
+            "parameters": {
+                "source": {
+                    "type": "string",
+                    "description": "Source identifier or name (e.g., 'M31', 'NGC7000', 'Andromeda Galaxy')",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Frame M31",
+                "description": "Set framing assistant to Andromeda Galaxy",
+                "code": "result = await nina_set_framingassistant_source(FramingAssistantSetSourceInput(source='M31'))"
+            },
+            {
+                "title": "Frame NGC7000",
+                "description": "Set framing assistant to North America Nebula",
+                "code": "result = await nina_set_framingassistant_source(FramingAssistantSetSourceInput(source='NGC7000'))"
+            }
+            ]
+        },
+        "nina_set_framingassistant_coordinates": {
+            "title": "Set Framing Coordinates",
+            "description": "Set the coordinates for the framing assistant using RA and Dec values.",
+            "parameters": {
+                "ra": {
+                    "type": "number",
+                    "description": "Right Ascension in degrees or hours",
+                    "required": true
+                },
+                "dec": {
+                    "type": "number",
+                    "description": "Declination in degrees",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Set Custom Coordinates",
+                "description": "Set framing assistant to specific RA/Dec",
+                "code": "result = await nina_set_framingassistant_coordinates(FramingAssistantSetCoordinatesInput(ra=10.68, dec=41.27))"
+            }
+            ]
+        },
+        "nina_framingassistant_slew": {
+            "title": "Slew to Framing Target",
+            "description": "Slew the mount to the framing assistant target coordinates.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Slew to Target",
+                "description": "Slew mount to the current framing assistant target",
+                "code": "result = await nina_framingassistant_slew()"
+            }
+            ]
+        },
+        "nina_set_framingassistant_rotation": {
+            "title": "Set Camera Rotation",
+            "description": "Set the camera rotation angle for the framing assistant.",
+            "parameters": {
+                "rotation": {
+                    "type": "number",
+                    "description": "Rotation angle in degrees",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Set Rotation to 45°",
+                "description": "Set camera rotation for framing",
+                "code": "result = await nina_set_framingassistant_rotation(FramingAssistantSetRotationInput(rotation=45.0))"
+            }
+            ]
+        },
+        "nina_determine_framingassistant_rotation": {
+            "title": "Determine Optimal Rotation",
+            "description": "Automatically determine the optimal camera rotation for the framing assistant target.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status with determined rotation",
+                "Rotation": "Determined rotation angle in degrees",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Auto-Determine Rotation",
+                "description": "Let NINA calculate the best camera rotation",
+                "code": "result = await nina_determine_framingassistant_rotation()"
+            }
+            ]
+        },
+        "nina_show_profile": {
+            "title": "Show Profile",
+            "description": "Show profile information - either the active profile details or a list of all available profiles.",
+            "parameters": {
+                "active": {
+                    "type": "boolean",
+                    "description": "If true, shows active profile details. If false or omitted, shows list of all profiles.",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "ProfileInfo": "Active profile details or list of available profiles",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Active Profile",
+                "description": "Retrieve detailed information about the active profile",
+                "code": "result = await nina_show_profile(ProfileShowInput(active=True))"
+            },
+            {
+                "title": "List All Profiles",
+                "description": "Get a list of all available profiles",
+                "code": "result = await nina_show_profile(ProfileShowInput(active=False))"
+            }
+            ]
+        },
+        "nina_change_profile_value": {
+            "title": "Change Profile Value",
+            "description": "Change a specific profile setting value by providing the setting path and new value.",
+            "parameters": {
+                "setting_path": {
+                    "type": "string",
+                    "description": "Path to the setting (e.g., 'CameraSettings.Gain', 'FocuserSettings.AutoFocusStepSize')",
+                    "required": true
+                },
+                "value": {
+                    "type": "string",
+                    "description": "New value for the setting",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Change Camera Gain",
+                "description": "Modify the camera gain setting in the profile",
+                "code": "result = await nina_change_profile_value(ProfileChangeValueInput(setting_path='CameraSettings.Gain', value='100'))"
+            },
+            {
+                "title": "Change Autofocus Step Size",
+                "description": "Modify the focuser autofocus step size",
+                "code": "result = await nina_change_profile_value(ProfileChangeValueInput(setting_path='FocuserSettings.AutoFocusStepSize', value='50'))"
+            }
+            ]
+        },
+        "nina_switch_profile": {
+            "title": "Switch Profile",
+            "description": "Switch to a different NINA profile by profile ID.",
+            "parameters": {
+                "profile_id": {
+                    "type": "string",
+                    "description": "ID of the profile to switch to",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Switch to Different Profile",
+                "description": "Switch to a specific profile by its ID",
+                "code": "result = await nina_switch_profile(ProfileSwitchInput(profile_id='profile-guid-here'))"
+            }
+            ]
+        },
+        "nina_get_profile_horizon": {
+            "title": "Get Profile Horizon",
+            "description": "Get the horizon definition from the current profile. The horizon defines altitude limits based on azimuth for obstruction avoidance.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Horizon": "Horizon data with azimuth and altitude points",
+                "Type": "NINA_API"
+            },
+            "examples": [
+            {
+                "title": "Get Horizon Definition",
+                "description": "Retrieve the horizon data for obstruction planning",
+                "code": "result = await nina_get_profile_horizon()"
+            }
+            ]
+        },
+        "nina_platesolve_capsolve": {
+            "title": "Plate Solve Current Image",
+            "description": "Plate solve the currently loaded image in NINA to determine precise astrometric coordinates.",
+            "parameters": {
+                "blind": {
+                    "type": "boolean",
+                    "description": "Whether to use blind solving (no hint coordinates)",
+                    "required": false
+                },
+                "coordinates": {
+                    "type": "string",
+                    "description": "Optional hint coordinates in format 'RA,Dec'",
+                    "required": false
+                },
+                "focalLength": {
+                    "type": "float",
+                    "description": "Optional focal length hint in millimeters",
+                    "required": false
+                },
+                "pixelSize": {
+                    "type": "float",
+                    "description": "Optional pixel size hint in microns",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating solve success",
+                "Message": "Operation status message",
+                "PlateSolveResult": {
+                    "Success": "Boolean indicating solve success",
+                    "RA": "Right Ascension in hours",
+                    "Dec": "Declination in degrees",
+                    "Rotation": "Image rotation in degrees",
+                    "PixelScale": "Arcseconds per pixel",
+                    "Error": "Error message if solve failed"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Solve with Hints",
+                    "description": "Solve current image with coordinate hints",
+                    "code": "result = await nina_platesolve_capsolve(PlateSolveCapSolveInput(coordinates='5.5,22.0', focalLength=600))"
+                },
+                {
+                    "title": "Blind Solve",
+                    "description": "Solve without any hints (slower)",
+                    "code": "result = await nina_platesolve_capsolve(PlateSolveCapSolveInput(blind=True))"
+                }
+            ]
+        },
+        "nina_platesolve_sync": {
+            "title": "Plate Solve and Sync Mount",
+            "description": "Plate solve the current image and synchronize the mount to the solved coordinates.",
+            "parameters": {
+                "blind": {
+                    "type": "boolean",
+                    "description": "Whether to use blind solving",
+                    "required": false
+                },
+                "coordinates": {
+                    "type": "string",
+                    "description": "Optional hint coordinates in format 'RA,Dec'",
+                    "required": false
+                },
+                "focalLength": {
+                    "type": "float",
+                    "description": "Optional focal length hint in millimeters",
+                    "required": false
+                },
+                "pixelSize": {
+                    "type": "float",
+                    "description": "Optional pixel size hint in microns",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "PlateSolveResult": "Plate solve result and mount sync status",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Solve and Sync",
+                    "description": "Solve current image and sync mount position",
+                    "code": "result = await nina_platesolve_sync(PlateSolveSyncInput(focalLength=600))"
+                }
+            ]
+        },
+        "nina_platesolve_center": {
+            "title": "Plate Solve, Sync, and Center",
+            "description": "Iteratively plate solve, sync mount, slew to target, and repeat until centered on target coordinates.",
+            "parameters": {
+                "ra": {
+                    "type": "float",
+                    "description": "Target Right Ascension in hours",
+                    "required": true
+                },
+                "dec": {
+                    "type": "float",
+                    "description": "Target Declination in degrees",
+                    "required": true
+                },
+                "blind": {
+                    "type": "boolean",
+                    "description": "Whether to use blind solving",
+                    "required": false
+                },
+                "focalLength": {
+                    "type": "float",
+                    "description": "Optional focal length hint in millimeters",
+                    "required": false
+                },
+                "pixelSize": {
+                    "type": "float",
+                    "description": "Optional pixel size hint in microns",
+                    "required": false
+                },
+                "maxIterations": {
+                    "type": "integer",
+                    "description": "Maximum centering iterations (default: 3)",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating centering success",
+                "Message": "Operation status message",
+                "CenteringResult": "Final position and iteration count",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Center on M42",
+                    "description": "Center precisely on Orion Nebula coordinates",
+                    "code": "result = await nina_platesolve_center(PlateSolveCenterInput(ra=5.583, dec=-5.391, maxIterations=5))"
+                }
+            ]
+        },
+        "nina_platesolve_status": {
+            "title": "Get Plate Solve Status",
+            "description": "Get the status of the current plate solve operation including progress information.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Status": {
+                    "Running": "Boolean indicating if solve is active",
+                    "Progress": "Progress percentage",
+                    "CurrentOperation": "Description of current operation"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Check Status",
+                    "description": "Get current plate solve operation status",
+                    "code": "result = await nina_platesolve_status()"
+                }
+            ]
+        },
+        "nina_platesolve_cancel": {
+            "title": "Cancel Plate Solve",
+            "description": "Cancel the currently running plate solve operation.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating cancellation success",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Cancel Solve",
+                    "description": "Cancel ongoing plate solve operation",
+                    "code": "result = await nina_platesolve_cancel()"
+                }
+            ]
+        },
+        "nina_get_version": {
+            "title": "Get NINA Version",
+            "description": "Get the current version of NINA that is running.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "NINA version string",
+                "Version": "NINA version number",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get Version",
+                    "description": "Check which version of NINA is running",
+                    "code": "result = await nina_get_version()"
+                }
+            ]
+        },
+        "nina_get_start_time": {
+            "title": "Get Application Start Time",
+            "description": "Get the timestamp when NINA was started.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "StartTime": "ISO 8601 formatted start time",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get Start Time",
+                    "description": "Check when NINA was launched",
+                    "code": "result = await nina_get_start_time()"
+                }
+            ]
+        },
+        "nina_get_tab": {
+            "title": "Get/Activate Application Tab",
+            "description": "Activate a specific tab in the NINA application UI.",
+            "parameters": {
+                "tab": {
+                    "type": "string",
+                    "description": "Name of the tab to activate (e.g., 'Equipment', 'Imaging', 'Sequence')",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Switch to Equipment Tab",
+                    "description": "Activate the Equipment tab in NINA",
+                    "code": "result = await nina_get_tab(ApplicationGetTabInput(tab='Equipment'))"
+                },
+                {
+                    "title": "Switch to Imaging Tab",
+                    "description": "Activate the Imaging tab",
+                    "code": "result = await nina_get_tab(ApplicationGetTabInput(tab='Imaging'))"
+                }
+            ]
+        },
+        "nina_get_logs": {
+            "title": "Get Application Logs",
+            "description": "Retrieve the NINA application log entries.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Logs": "Array of log entries with timestamps and messages",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get Logs",
+                    "description": "Retrieve recent log entries",
+                    "code": "result = await nina_get_logs()"
+                }
+            ]
+        },
+        "nina_solve_image": {
+            "title": "Solve Image File",
+            "description": "Plate solve an image file on disk to determine astrometric coordinates.",
+            "parameters": {
+                "image_path": {
+                    "type": "string",
+                    "description": "Full path to the image file to solve",
+                    "required": true
+                },
+                "blind": {
+                    "type": "boolean",
+                    "description": "Whether to use blind solving (no hint coordinates)",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating solve success",
+                "Message": "Operation status message",
+                "PlateSolveResult": {
+                    "Success": "Boolean indicating solve success",
+                    "RA": "Right Ascension in hours",
+                    "Dec": "Declination in degrees",
+                    "Rotation": "Image rotation in degrees",
+                    "PixelScale": "Arcseconds per pixel"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Solve Image File",
+                    "description": "Solve a saved FITS file",
+                    "code": "result = await nina_solve_image(ImageSolveInput(image_path='C:/Images/M42.fits'))"
+                }
+            ]
+        },
+        "nina_solve_prepared_image": {
+            "title": "Solve Prepared Image",
+            "description": "Plate solve the prepared (debayered/stretched) image from NINA.",
+            "parameters": {
+                "image_path": {
+                    "type": "string",
+                    "description": "Optional path to specific prepared image",
+                    "required": false
+                },
+                "blind": {
+                    "type": "boolean",
+                    "description": "Whether to use blind solving",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating solve success",
+                "Message": "Operation status message",
+                "PlateSolveResult": {
+                    "Success": "Boolean indicating solve success",
+                    "RA": "Right Ascension in hours",
+                    "Dec": "Declination in degrees",
+                    "Rotation": "Image rotation in degrees",
+                    "PixelScale": "Arcseconds per pixel"
+                },
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Solve Prepared Image",
+                    "description": "Solve the current prepared/stretched image",
+                    "code": "result = await nina_solve_prepared_image(ImageSolveInput())"
+                }
+            ]
+        },
+        "nina_get_prepared_image": {
+            "title": "Get Prepared Image",
+            "description": "Get the prepared (debayered/stretched) image data from NINA in various formats.",
+            "parameters": {
+                "resize": {
+                    "type": "integer",
+                    "description": "Optional width in pixels to resize image",
+                    "required": false
+                },
+                "format": {
+                    "type": "string",
+                    "description": "Image format: 'jpeg', 'png', 'fits' (default: 'jpeg')",
+                    "required": false
+                },
+                "quality": {
+                    "type": "integer",
+                    "description": "JPEG quality 1-100 (default: 85)",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Image": "Base64 encoded image data or FITS file",
+                "Format": "Image format returned",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get JPEG Preview",
+                    "description": "Get prepared image as 800px JPEG",
+                    "code": "result = await nina_get_prepared_image(ImageGetPreparedInput(resize=800, format='jpeg', quality=85))"
+                },
+                {
+                    "title": "Get Full PNG",
+                    "description": "Get full-size PNG",
+                    "code": "result = await nina_get_prepared_image(ImageGetPreparedInput(format='png'))"
+                }
+            ]
+        },
+        "nina_add_filter": {
+            "title": "Add Filter to Wheel",
+            "description": "Add a new filter to the filter wheel configuration.",
+            "parameters": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the filter to add",
+                    "required": true
+                },
+                "position": {
+                    "type": "integer",
+                    "description": "Position in the filter wheel (1-based)",
+                    "required": true
+                },
+                "focus_offset": {
+                    "type": "integer",
+                    "description": "Optional focus offset for this filter",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Add Luminance Filter",
+                    "description": "Add L filter at position 1",
+                    "code": "result = await nina_add_filter(FilterWheelAddFilterInput(name='Luminance', position=1))"
+                },
+                {
+                    "title": "Add Ha with Focus Offset",
+                    "description": "Add Ha filter with focus adjustment",
+                    "code": "result = await nina_add_filter(FilterWheelAddFilterInput(name='Ha 7nm', position=3, focus_offset=50))"
+                }
+            ]
+        },
+        "nina_remove_filter": {
+            "title": "Remove Filter from Wheel",
+            "description": "Remove a filter from the filter wheel configuration.",
+            "parameters": {
+                "position": {
+                    "type": "integer",
+                    "description": "Position of the filter to remove (1-based)",
+                    "required": true
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Remove Filter",
+                    "description": "Remove filter from position 4",
+                    "code": "result = await nina_remove_filter(FilterWheelRemoveFilterInput(position=4))"
+                }
+            ]
+        },
+        "nina_trained_flats": {
+            "title": "Trained Flats Capture",
+            "description": "Start trained flats capture using previously trained exposure settings for optimal flat frames.",
+            "parameters": {
+                "filter_name": {
+                    "type": "string",
+                    "description": "Optional specific filter name for trained flats",
+                    "required": false
+                },
+                "binning": {
+                    "type": "integer",
+                    "description": "Optional binning mode (1, 2, 3, 4)",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Start Trained Flats",
+                    "description": "Capture trained flats for all filters",
+                    "code": "result = await nina_trained_flats(TrainedFlatsInput())"
+                },
+                {
+                    "title": "Trained Flats for Ha",
+                    "description": "Capture trained flats for specific filter",
+                    "code": "result = await nina_trained_flats(TrainedFlatsInput(filter_name='Ha 7nm'))"
+                }
+            ]
+        },
+        "nina_get_plugin_settings": {
+            "title": "Get Plugin Settings",
+            "description": "Retrieve settings and configuration for NINA plugins.",
+            "parameters": {
+                "plugin_id": {
+                    "type": "string",
+                    "description": "Optional specific plugin ID to get settings for",
+                    "required": false
+                }
+            },
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message",
+                "Settings": "Plugin settings and configuration data",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get All Plugin Settings",
+                    "description": "Retrieve settings for all plugins",
+                    "code": "result = await nina_get_plugin_settings(PluginSettingsInput())"
+                },
+                {
+                    "title": "Get Specific Plugin Settings",
+                    "description": "Get settings for a specific plugin",
+                    "code": "result = await nina_get_plugin_settings(PluginSettingsInput(plugin_id='Hocus.Focus'))"
+                }
+            ]
+        },
+        "nina_get_event_history": {
+            "title": "Get Event History",
+            "description": "Retrieve event history from the NINA event websocket to track application state changes and operations.",
+            "parameters": {},
+            "returns": {
+                "Success": "Boolean indicating success",
+                "Message": "Operation status message with event count",
+                "Events": "Array of event objects with timestamps and event data",
+                "Details": "Response from NINA server",
+                "Type": "NINA_API"
+            },
+            "examples": [
+                {
+                    "title": "Get Event History",
+                    "description": "Retrieve recent event history",
+                    "code": "result = await nina_get_event_history()"
                 }
             ]
         }
