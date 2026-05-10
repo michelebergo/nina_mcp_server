@@ -385,10 +385,42 @@ All settings come from environment variables. Defaults are sensible for a single
 
 **Two ways to provide them**, depending on how you launch the server:
 
-- **Launched by an MCP client** (Claude Desktop, AI Assistant plugin): put them in the `env: { ... }` block of the client's config. This is the authoritative source.
-- **Launched manually for testing**: copy [`.env.example`](.env.example) to `.env` next to `nina_advanced_mcp.py` and edit the values — `python-dotenv` loads it automatically. The MCP-client-supplied `env` overrides `.env`.
+| Launch method | Where the vars live | Precedence |
+|---|---|---|
+| MCP client (Claude Desktop, AI Assistant plugin) launches the server | `env: { ... }` block of the client's config | **Wins** over `.env` |
+| You run the server manually (e.g. for [Step 3](#step-3--verify-the-server-runs)) | `.env` file in the repo root | Loaded by `python-dotenv` at startup |
 
 > If NINA is on a **different machine** (e.g. observatory PC), set `NINA_HOST` to its IP and make sure the Advanced API port is reachable through the firewall.
+
+### Using a `.env` file for manual runs
+
+For testing the server outside of any MCP client (or as a one-time default before plugging it into Claude), drop a `.env` file next to `nina_advanced_mcp.py`:
+
+```bash
+# from the repo root:
+
+# Windows:
+copy .env.example .env
+
+# macOS / Linux:
+cp .env.example .env
+```
+
+Then open `.env` in any text editor (the file is the same shape as the table above):
+
+```dotenv
+NINA_HOST=localhost
+NINA_PORT=1888
+LOG_LEVEL=INFO
+IMAGE_SAVE_DIR=~/Desktop/NINA_Images
+```
+
+Edit the values for your setup. **The next time you run `python nina_advanced_mcp.py` (or `uv run …`) those values are loaded automatically.**
+
+Notes:
+- `.env` is already excluded from git via `.gitignore` — your local paths and any future tokens won't leak to GitHub.
+- If you later configure an MCP client to launch the server, the `env: { ... }` block in `claude_desktop_config.json` **overrides** anything in `.env`. So if a value seems "stuck", check the client's config first.
+- Only four variables are honored: `NINA_HOST`, `NINA_PORT`, `LOG_LEVEL`, `IMAGE_SAVE_DIR`. Other keys are ignored.
 
 ---
 
@@ -516,6 +548,15 @@ Any MCP-compliant client over **stdio** works. The launch command is the same (`
 <summary><b>Where are the server logs?</b></summary>
 
 `logs/nina_advanced_api.log`, created next to `nina_advanced_mcp.py` on first launch. Useful when an MCP-client-launched server fails silently — the log captures the startup banner and every request.
+
+</details>
+
+<details>
+<summary><b>Do I need a <code>.env</code> file?</b></summary>
+
+**Only if you plan to run the server manually** (e.g. for the [Step 3 verify](#step-3--verify-the-server-runs) sanity check, or when developing). When Claude Desktop / the AI Assistant plugin launches the server for you, they inject env vars through their own config and `.env` is ignored.
+
+That said, having a `.env` doesn't hurt — it's a useful baseline. Copy `.env.example` to `.env`, leave the defaults if NINA runs on the same machine on port 1888, and you're done.
 
 </details>
 
