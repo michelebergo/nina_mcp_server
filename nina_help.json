@@ -113,6 +113,20 @@
         "sequence": {
             "title": "Sequence Control",
             "description": "Tools for managing NINA Advanced Sequences, including starting, stopping, loading sequences from files, and retrieving sequence state and structure"
+        },
+        "autopilot": {
+            "title": "Autopilot Extensions",
+            "description": "Phase 1 building blocks for the autonomous astrophotography orchestrator. These tools enable agentic operation: reading the Target Scheduler DB, sending Discord alerts to the human operator, and polling NINA events for event-driven (zero-token-when-idle) agent loops.",
+            "requirements": [
+                "Target Scheduler plugin v5+ installed in NINA (for ts_* tools)",
+                "Discord webhook URL exported as DISCORD_WEBHOOK_URL env var (for alerts)",
+                "NINA running and Advanced API plugin enabled (for event subscription)"
+            ],
+            "tools_overview": [
+                "Target Scheduler: nina_ts_list_projects, nina_ts_next_target, nina_ts_get_exposure_plan",
+                "Alerting: nina_alert_human",
+                "Events: nina_poll_events_since"
+            ]
         }
     },
     "tool_help": {
@@ -1669,11 +1683,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Move to Mechanical Position",
-                "description": "Move rotator mechanically to 45 degrees",
-                "code": "result = await nina_move_rotator_mechanically(RotatorMoveMechanicallyInput(position=45.0))"
-            }
+                {
+                    "title": "Move to Mechanical Position",
+                    "description": "Move rotator mechanically to 45 degrees",
+                    "code": "result = await nina_move_rotator_mechanically(RotatorMoveMechanicallyInput(position=45.0))"
+                }
             ]
         },
         "nina_reverse_rotator": {
@@ -1686,11 +1700,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Toggle Reverse State",
-                "description": "Toggle the rotator reverse direction",
-                "code": "result = await nina_reverse_rotator()"
-            }
+                {
+                    "title": "Toggle Reverse State",
+                    "description": "Toggle the rotator reverse direction",
+                    "code": "result = await nina_reverse_rotator()"
+                }
             ]
         },
         "nina_set_rotator_range": {
@@ -1709,11 +1723,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Set Range Start",
-                "description": "Set the rotator range start position",
-                "code": "result = await nina_set_rotator_range(RotatorSetRangeInput(range_start=0.0))"
-            }
+                {
+                    "title": "Set Range Start",
+                    "description": "Set the rotator range start position",
+                    "code": "result = await nina_set_rotator_range(RotatorSetRangeInput(range_start=0.0))"
+                }
             ]
         },
         "nina_connect_dome": {
@@ -3260,25 +3274,19 @@
         },
         "nina_get_version": {
             "title": "Get NINA Version",
-            "description": "Get version information about NINA and its components.",
+            "description": "Get the current version of NINA that is running.",
             "parameters": {},
             "returns": {
                 "Success": "Boolean indicating success",
-                "Message": "Operation status message",
-                "Version": {
-                    "NINA": "NINA software version",
-                    "API": "API version",
-                    "Core": "Core components version",
-                    "Plugin": "Plugin version if applicable",
-                    "Platform": "Operating system platform",
-                    "Framework": ".NET framework version"
-                },
+                "Message": "NINA version string",
+                "Version": "NINA version number",
+                "Details": "Response from NINA server",
                 "Type": "NINA_API"
             },
             "examples": [
                 {
-                    "title": "Get Version Info",
-                    "description": "Get NINA version information",
+                    "title": "Get Version",
+                    "description": "Check which version of NINA is running",
                     "code": "result = await nina_get_version()"
                 }
             ]
@@ -3317,53 +3325,21 @@
             ]
         },
         "nina_get_logs": {
-            "title": "Get Server Logs",
-            "description": "Retrieve server logs for debugging and monitoring.",
-            "parameters": {
-                "count": {
-                    "type": "integer",
-                    "description": "Number of log entries to retrieve",
-                    "required": false,
-                    "default": 100
-                },
-                "level": {
-                    "type": "string",
-                    "description": "Minimum log level ('DEBUG', 'INFO', 'WARN', 'ERROR')",
-                    "required": false,
-                    "default": "INFO"
-                },
-                "component": {
-                    "type": "string",
-                    "description": "Filter by component name",
-                    "required": false
-                }
-            },
+            "title": "Get Application Logs",
+            "description": "Retrieve the NINA application log entries.",
+            "parameters": {},
             "returns": {
                 "Success": "Boolean indicating success",
                 "Message": "Operation status message",
-                "Logs": {
-                    "description": "List of log entries",
-                    "items": {
-                        "Timestamp": "Log entry timestamp",
-                        "Level": "Log level",
-                        "Component": "Source component",
-                        "Message": "Log message",
-                        "Details": "Additional details if any",
-                        "Exception": "Exception details if error"
-                    }
-                },
+                "Logs": "Array of log entries with timestamps and messages",
+                "Details": "Response from NINA server",
                 "Type": "NINA_API"
             },
             "examples": [
                 {
-                    "title": "Get Recent Logs",
-                    "description": "Get last 100 log entries",
-                    "code": "result = await nina_get_logs(LogsInput())"
-                },
-                {
-                    "title": "Get Error Logs",
-                    "description": "Get last 50 error logs",
-                    "code": "result = await nina_get_logs(LogsInput(count=50, level='ERROR'))"
+                    "title": "Get Logs",
+                    "description": "Retrieve recent log entries",
+                    "code": "result = await nina_get_logs()"
                 }
             ]
         },
@@ -3487,11 +3463,11 @@
             "title": "Connect Switch",
             "description": "Connect to a specific switch device.",
             "parameters": {
-            "device_id": {
-                "type": "string",
-                "description": "DeviceId from nina_list_switch_devices",
-                "required": true
-            }
+                "device_id": {
+                    "type": "string",
+                    "description": "DeviceId from nina_list_switch_devices",
+                    "required": true
+                }
             },
             "returns": {
                 "Success": "Boolean indicating connection success",
@@ -3501,9 +3477,9 @@
             },
             "examples": [
                 {
-                "title": "Connect Switch",
-                "description": "Connect to a SVBONY or Pegasus switch",
-                "code": "result = await nina_connect_switch(SwitchConnectInput(device_id='ASCOM.SVBONY.Switch'))"
+                    "title": "Connect Switch",
+                    "description": "Connect to a SVBONY or Pegasus switch",
+                    "code": "result = await nina_connect_switch(SwitchConnectInput(device_id='ASCOM.SVBONY.Switch'))"
                 }
             ]
         },
@@ -3538,11 +3514,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Channels",
-                "description": "Inspect available power outputs and sensors",
-                "code": "result = await nina_get_switch_channels()"
-            }
+                {
+                    "title": "Get Channels",
+                    "description": "Inspect available power outputs and sensors",
+                    "code": "result = await nina_get_switch_channels()"
+                }
             ]
         },
         "nina_set_switch": {
@@ -3568,11 +3544,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Turn Output On",
-                "description": "Enable power output 0",
-                "code": "result = await nina_set_switch(SwitchSetInput(index=0, value=1))"
-            }
+                {
+                    "title": "Turn Output On",
+                    "description": "Enable power output 0",
+                    "code": "result = await nina_set_switch(SwitchSetInput(index=0, value=1))"
+                }
             ]
         },
         "nina_connect_weather": {
@@ -3592,16 +3568,16 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Connect Default Weather Station",
-                "description": "Connect to the default weather station",
-                "code": "result = await nina_connect_weather(WeatherConnectInput())"
-            },
-            {
-                "title": "Connect Specific Weather Station",
-                "description": "Connect to a specific weather station by device ID",
-                "code": "result = await nina_connect_weather(WeatherConnectInput(device_id='ASCOM.Simulator.ObservingConditions'))"
-            }
+                {
+                    "title": "Connect Default Weather Station",
+                    "description": "Connect to the default weather station",
+                    "code": "result = await nina_connect_weather(WeatherConnectInput())"
+                },
+                {
+                    "title": "Connect Specific Weather Station",
+                    "description": "Connect to a specific weather station by device ID",
+                    "code": "result = await nina_connect_weather(WeatherConnectInput(device_id='ASCOM.Simulator.ObservingConditions'))"
+                }
             ]
         },
         "nina_disconnect_weather": {
@@ -3615,11 +3591,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Disconnect Weather Station",
-                "description": "Disconnect from the connected weather station",
-                "code": "result = await nina_disconnect_weather()"
-            }
+                {
+                    "title": "Disconnect Weather Station",
+                    "description": "Disconnect from the connected weather station",
+                    "code": "result = await nina_disconnect_weather()"
+                }
             ]
         },
         "nina_get_weather_info": {
@@ -3657,11 +3633,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Current Weather",
-                "description": "Retrieve all current weather conditions",
-                "code": "result = await nina_get_weather_info()"
-            }
+                {
+                    "title": "Get Current Weather",
+                    "description": "Retrieve all current weather conditions",
+                    "code": "result = await nina_get_weather_info()"
+                }
             ]
         },
         "nina_list_weather_sources": {
@@ -3676,11 +3652,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "List All Weather Sources",
-                "description": "Get a list of all available weather station devices",
-                "code": "result = await nina_list_weather_sources()"
-            }
+                {
+                    "title": "List All Weather Sources",
+                    "description": "Get a list of all available weather station devices",
+                    "code": "result = await nina_list_weather_sources()"
+                }
             ]
         },
         "nina_rescan_weather_sources": {
@@ -3695,11 +3671,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Rescan for Weather Stations",
-                "description": "Rescan and get updated list of available weather stations",
-                "code": "result = await nina_rescan_weather_sources()"
-            }
+                {
+                    "title": "Rescan for Weather Stations",
+                    "description": "Rescan and get updated list of available weather stations",
+                    "code": "result = await nina_rescan_weather_sources()"
+                }
             ]
         },
         "nina_connect_safetymonitor": {
@@ -3719,16 +3695,16 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Connect Default Safety Monitor",
-                "description": "Connect to the default safety monitor",
-                "code": "result = await nina_connect_safetymonitor(SafetyMonitorConnectInput())"
-            },
-            {
-                "title": "Connect Specific Safety Monitor",
-                "description": "Connect to a specific safety monitor by device ID",
-                "code": "result = await nina_connect_safetymonitor(SafetyMonitorConnectInput(device_id='ASCOM.Simulator.SafetyMonitor'))"
-            }
+                {
+                    "title": "Connect Default Safety Monitor",
+                    "description": "Connect to the default safety monitor",
+                    "code": "result = await nina_connect_safetymonitor(SafetyMonitorConnectInput())"
+                },
+                {
+                    "title": "Connect Specific Safety Monitor",
+                    "description": "Connect to a specific safety monitor by device ID",
+                    "code": "result = await nina_connect_safetymonitor(SafetyMonitorConnectInput(device_id='ASCOM.Simulator.SafetyMonitor'))"
+                }
             ]
         },
         "nina_disconnect_safetymonitor": {
@@ -3742,11 +3718,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Disconnect Safety Monitor",
-                "description": "Disconnect from the connected safety monitor",
-                "code": "result = await nina_disconnect_safetymonitor()"
-            }
+                {
+                    "title": "Disconnect Safety Monitor",
+                    "description": "Disconnect from the connected safety monitor",
+                    "code": "result = await nina_disconnect_safetymonitor()"
+                }
             ]
         },
         "nina_get_safetymonitor_info": {
@@ -3769,11 +3745,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Check Safety Status",
-                "description": "Retrieve current safety status before operations",
-                "code": "result = await nina_get_safetymonitor_info()"
-            }
+                {
+                    "title": "Check Safety Status",
+                    "description": "Retrieve current safety status before operations",
+                    "code": "result = await nina_get_safetymonitor_info()"
+                }
             ]
         },
         "nina_list_safetymonitor_devices": {
@@ -3788,11 +3764,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "List All Safety Monitors",
-                "description": "Get a list of all available safety monitor devices",
-                "code": "result = await nina_list_safetymonitor_devices()"
-            }
+                {
+                    "title": "List All Safety Monitors",
+                    "description": "Get a list of all available safety monitor devices",
+                    "code": "result = await nina_list_safetymonitor_devices()"
+                }
             ]
         },
         "nina_rescan_safetymonitor_devices": {
@@ -3807,11 +3783,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Rescan for Safety Monitors",
-                "description": "Rescan and get updated list of available safety monitors",
-                "code": "result = await nina_rescan_safetymonitor_devices()"
-            }
+                {
+                    "title": "Rescan for Safety Monitors",
+                    "description": "Rescan and get updated list of available safety monitors",
+                    "code": "result = await nina_rescan_safetymonitor_devices()"
+                }
             ]
         },
         "nina_get_livestack_status": {
@@ -3825,11 +3801,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Check Livestack Status",
-                "description": "Get the current status of the livestack",
-                "code": "result = await nina_get_livestack_status()"
-            }
+                {
+                    "title": "Check Livestack Status",
+                    "description": "Get the current status of the livestack",
+                    "code": "result = await nina_get_livestack_status()"
+                }
             ]
         },
         "nina_start_livestack": {
@@ -3842,11 +3818,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Start Livestack",
-                "description": "Start the livestack plugin",
-                "code": "result = await nina_start_livestack()"
-            }
+                {
+                    "title": "Start Livestack",
+                    "description": "Start the livestack plugin",
+                    "code": "result = await nina_start_livestack()"
+                }
             ]
         },
         "nina_stop_livestack": {
@@ -3859,11 +3835,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Stop Livestack",
-                "description": "Stop the livestack plugin",
-                "code": "result = await nina_stop_livestack()"
-            }
+                {
+                    "title": "Stop Livestack",
+                    "description": "Stop the livestack plugin",
+                    "code": "result = await nina_stop_livestack()"
+                }
             ]
         },
         "nina_get_livestack_available_stacks": {
@@ -3878,11 +3854,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "List Available Stacks",
-                "description": "Get all available livestacks",
-                "code": "result = await nina_get_livestack_available_stacks()"
-            }
+                {
+                    "title": "List Available Stacks",
+                    "description": "Get all available livestacks",
+                    "code": "result = await nina_get_livestack_available_stacks()"
+                }
             ]
         },
         "nina_get_livestack_stacked_image": {
@@ -3913,16 +3889,16 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Stacked Image (Default)",
-                "description": "Get the stacked image with default settings",
-                "code": "result = await nina_get_livestack_stacked_image(LivestackImageInput())"
-            },
-            {
-                "title": "Get Resized Stacked Image",
-                "description": "Get a resized stacked image in PNG format",
-                "code": "result = await nina_get_livestack_stacked_image(LivestackImageInput(resize=1920, format='png'))"
-            }
+                {
+                    "title": "Get Stacked Image (Default)",
+                    "description": "Get the stacked image with default settings",
+                    "code": "result = await nina_get_livestack_stacked_image(LivestackImageInput())"
+                },
+                {
+                    "title": "Get Resized Stacked Image",
+                    "description": "Get a resized stacked image in PNG format",
+                    "code": "result = await nina_get_livestack_stacked_image(LivestackImageInput(resize=1920, format='png'))"
+                }
             ]
         },
         "nina_get_livestack_stacked_image_info": {
@@ -3936,11 +3912,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Image Information",
-                "description": "Get information about the current stacked image",
-                "code": "result = await nina_get_livestack_stacked_image_info()"
-            }
+                {
+                    "title": "Get Image Information",
+                    "description": "Get information about the current stacked image",
+                    "code": "result = await nina_get_livestack_stacked_image_info()"
+                }
             ]
         },
         "nina_get_moon_separation": {
@@ -3966,11 +3942,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Check Moon Separation for M31",
-                "description": "Calculate how far the Andromeda Galaxy is from the moon",
-                "code": "result = await nina_get_moon_separation(FramingAssistantMoonSeparationInput(ra=10.68, dec=41.27))"
-            }
+                {
+                    "title": "Check Moon Separation for M31",
+                    "description": "Calculate how far the Andromeda Galaxy is from the moon",
+                    "code": "result = await nina_get_moon_separation(FramingAssistantMoonSeparationInput(ra=10.68, dec=41.27))"
+                }
             ]
         },
         "nina_get_framingassistant_info": {
@@ -3984,11 +3960,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Framing Assistant State",
-                "description": "Retrieve current framing assistant information",
-                "code": "result = await nina_get_framingassistant_info()"
-            }
+                {
+                    "title": "Get Framing Assistant State",
+                    "description": "Retrieve current framing assistant information",
+                    "code": "result = await nina_get_framingassistant_info()"
+                }
             ]
         },
         "nina_set_framingassistant_source": {
@@ -4007,16 +3983,16 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Frame M31",
-                "description": "Set framing assistant to Andromeda Galaxy",
-                "code": "result = await nina_set_framingassistant_source(FramingAssistantSetSourceInput(source='M31'))"
-            },
-            {
-                "title": "Frame NGC7000",
-                "description": "Set framing assistant to North America Nebula",
-                "code": "result = await nina_set_framingassistant_source(FramingAssistantSetSourceInput(source='NGC7000'))"
-            }
+                {
+                    "title": "Frame M31",
+                    "description": "Set framing assistant to Andromeda Galaxy",
+                    "code": "result = await nina_set_framingassistant_source(FramingAssistantSetSourceInput(source='M31'))"
+                },
+                {
+                    "title": "Frame NGC7000",
+                    "description": "Set framing assistant to North America Nebula",
+                    "code": "result = await nina_set_framingassistant_source(FramingAssistantSetSourceInput(source='NGC7000'))"
+                }
             ]
         },
         "nina_set_framingassistant_coordinates": {
@@ -4040,11 +4016,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Set Custom Coordinates",
-                "description": "Set framing assistant to specific RA/Dec",
-                "code": "result = await nina_set_framingassistant_coordinates(FramingAssistantSetCoordinatesInput(ra=10.68, dec=41.27))"
-            }
+                {
+                    "title": "Set Custom Coordinates",
+                    "description": "Set framing assistant to specific RA/Dec",
+                    "code": "result = await nina_set_framingassistant_coordinates(FramingAssistantSetCoordinatesInput(ra=10.68, dec=41.27))"
+                }
             ]
         },
         "nina_framingassistant_slew": {
@@ -4057,11 +4033,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Slew to Target",
-                "description": "Slew mount to the current framing assistant target",
-                "code": "result = await nina_framingassistant_slew()"
-            }
+                {
+                    "title": "Slew to Target",
+                    "description": "Slew mount to the current framing assistant target",
+                    "code": "result = await nina_framingassistant_slew()"
+                }
             ]
         },
         "nina_set_framingassistant_rotation": {
@@ -4080,11 +4056,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Set Rotation to 45°",
-                "description": "Set camera rotation for framing",
-                "code": "result = await nina_set_framingassistant_rotation(FramingAssistantSetRotationInput(rotation=45.0))"
-            }
+                {
+                    "title": "Set Rotation to 45°",
+                    "description": "Set camera rotation for framing",
+                    "code": "result = await nina_set_framingassistant_rotation(FramingAssistantSetRotationInput(rotation=45.0))"
+                }
             ]
         },
         "nina_determine_framingassistant_rotation": {
@@ -4098,11 +4074,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Auto-Determine Rotation",
-                "description": "Let NINA calculate the best camera rotation",
-                "code": "result = await nina_determine_framingassistant_rotation()"
-            }
+                {
+                    "title": "Auto-Determine Rotation",
+                    "description": "Let NINA calculate the best camera rotation",
+                    "code": "result = await nina_determine_framingassistant_rotation()"
+                }
             ]
         },
         "nina_show_profile": {
@@ -4122,16 +4098,16 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Active Profile",
-                "description": "Retrieve detailed information about the active profile",
-                "code": "result = await nina_show_profile(ProfileShowInput(active=True))"
-            },
-            {
-                "title": "List All Profiles",
-                "description": "Get a list of all available profiles",
-                "code": "result = await nina_show_profile(ProfileShowInput(active=False))"
-            }
+                {
+                    "title": "Get Active Profile",
+                    "description": "Retrieve detailed information about the active profile",
+                    "code": "result = await nina_show_profile(ProfileShowInput(active=True))"
+                },
+                {
+                    "title": "List All Profiles",
+                    "description": "Get a list of all available profiles",
+                    "code": "result = await nina_show_profile(ProfileShowInput(active=False))"
+                }
             ]
         },
         "nina_change_profile_value": {
@@ -4155,16 +4131,16 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Change Camera Gain",
-                "description": "Modify the camera gain setting in the profile",
-                "code": "result = await nina_change_profile_value(ProfileChangeValueInput(setting_path='CameraSettings.Gain', value='100'))"
-            },
-            {
-                "title": "Change Autofocus Step Size",
-                "description": "Modify the focuser autofocus step size",
-                "code": "result = await nina_change_profile_value(ProfileChangeValueInput(setting_path='FocuserSettings.AutoFocusStepSize', value='50'))"
-            }
+                {
+                    "title": "Change Camera Gain",
+                    "description": "Modify the camera gain setting in the profile",
+                    "code": "result = await nina_change_profile_value(ProfileChangeValueInput(setting_path='CameraSettings.Gain', value='100'))"
+                },
+                {
+                    "title": "Change Autofocus Step Size",
+                    "description": "Modify the focuser autofocus step size",
+                    "code": "result = await nina_change_profile_value(ProfileChangeValueInput(setting_path='FocuserSettings.AutoFocusStepSize', value='50'))"
+                }
             ]
         },
         "nina_switch_profile": {
@@ -4183,11 +4159,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Switch to Different Profile",
-                "description": "Switch to a specific profile by its ID",
-                "code": "result = await nina_switch_profile(ProfileSwitchInput(profile_id='profile-guid-here'))"
-            }
+                {
+                    "title": "Switch to Different Profile",
+                    "description": "Switch to a specific profile by its ID",
+                    "code": "result = await nina_switch_profile(ProfileSwitchInput(profile_id='profile-guid-here'))"
+                }
             ]
         },
         "nina_get_profile_horizon": {
@@ -4201,11 +4177,11 @@
                 "Type": "NINA_API"
             },
             "examples": [
-            {
-                "title": "Get Horizon Definition",
-                "description": "Retrieve the horizon data for obstruction planning",
-                "code": "result = await nina_get_profile_horizon()"
-            }
+                {
+                    "title": "Get Horizon Definition",
+                    "description": "Retrieve the horizon data for obstruction planning",
+                    "code": "result = await nina_get_profile_horizon()"
+                }
             ]
         },
         "nina_platesolve_capsolve": {
@@ -4387,25 +4363,6 @@
                 }
             ]
         },
-        "nina_get_version": {
-            "title": "Get NINA Version",
-            "description": "Get the current version of NINA that is running.",
-            "parameters": {},
-            "returns": {
-                "Success": "Boolean indicating success",
-                "Message": "NINA version string",
-                "Version": "NINA version number",
-                "Details": "Response from NINA server",
-                "Type": "NINA_API"
-            },
-            "examples": [
-                {
-                    "title": "Get Version",
-                    "description": "Check which version of NINA is running",
-                    "code": "result = await nina_get_version()"
-                }
-            ]
-        },
         "nina_get_start_time": {
             "title": "Get Application Start Time",
             "description": "Get the timestamp when NINA was started.",
@@ -4451,25 +4408,6 @@
                     "title": "Switch to Imaging Tab",
                     "description": "Activate the Imaging tab",
                     "code": "result = await nina_get_tab(ApplicationGetTabInput(tab='Imaging'))"
-                }
-            ]
-        },
-        "nina_get_logs": {
-            "title": "Get Application Logs",
-            "description": "Retrieve the NINA application log entries.",
-            "parameters": {},
-            "returns": {
-                "Success": "Boolean indicating success",
-                "Message": "Operation status message",
-                "Logs": "Array of log entries with timestamps and messages",
-                "Details": "Response from NINA server",
-                "Type": "NINA_API"
-            },
-            "examples": [
-                {
-                    "title": "Get Logs",
-                    "description": "Retrieve recent log entries",
-                    "code": "result = await nina_get_logs()"
                 }
             ]
         },
@@ -4728,6 +4666,52 @@
                     "code": "result = await nina_get_event_history()"
                 }
             ]
+        },
+        "nina_ts_list_projects": {
+            "title": "List Target Scheduler Projects",
+            "description": "Read NINA Target Scheduler v5 projects from its local SQLite DB (read-only). Returns project metadata for use by the orchestrator's Planner agent. Does not require NINA to be running.",
+            "parameters": {
+                "profile_id": "Optional NINA profile GUID to scope results",
+                "active_only": "If true (default), only state=Active projects are returned"
+            },
+            "returns": "Details.Projects = list of {id, name, profile_id, state, priority, minimum_altitude, maximum_altitude, meridian_window}"
+        },
+        "nina_ts_next_target": {
+            "title": "Next Actionable Target",
+            "description": "Pick the next Target Scheduler target with remaining frames to acquire. Simple selection by project priority desc — altitude/moon/weather scoring is the Planner agent's job. Returns Found=false when nothing is actionable.",
+            "parameters": {
+                "profile_id": "Optional NINA profile GUID to restrict the search"
+            },
+            "returns": "Details = {Found: bool, Project, Target, Plans (only enabled with remaining>0)}"
+        },
+        "nina_ts_get_exposure_plan": {
+            "title": "Exposure Plan for a Target",
+            "description": "Return the per-filter exposure plans for a Target Scheduler target. Joins exposureplan + exposuretemplate so the result includes filter, exposure (sec), gain, offset, bin, plus desired/acquired/accepted and a computed remaining.",
+            "parameters": {
+                "target_id": "Target.Id from the Target Scheduler DB"
+            },
+            "returns": "Details.Plans = list of {plan_id, template_name, filter_name, exposure, gain, offset, bin, desired, acquired, accepted, remaining, enabled}"
+        },
+        "nina_alert_human": {
+            "title": "Alert Human via Discord",
+            "description": "Send an alert to the human operator via a Discord webhook. Three severity tiers: info (silent), alert (@mention configured user), panic (@everyone + siren). Supports optional image attachment.",
+            "parameters": {
+                "severity": "info | alert | panic",
+                "message": "Human-readable alert text (truncated to 2000 chars)",
+                "attach_image_path": "Optional path to an image (e.g. last sub thumbnail)",
+                "webhook_url": "Optional override; default reads $DISCORD_WEBHOOK_URL",
+                "user_id": "Optional Discord user ID for @mention; default reads $DISCORD_USER_ID"
+            },
+            "returns": "Standard envelope; Details.HttpStatus from Discord on success"
+        },
+        "nina_poll_events_since": {
+            "title": "Poll NINA Events",
+            "description": "Drain new NINA events from an in-memory buffer fed by a background WebSocket subscriber on /v2/api/event-websocket. First call lazily starts the subscriber. Use the returned NextCursor on the next call to avoid duplicates. Replaces poll-storms with event-driven agent loops — agents stay idle (zero tokens) until NINA pushes something.",
+            "parameters": {
+                "cursor": "Pass NextCursor from the previous call; omit on first call to drain buffered events",
+                "max_events": "Max events to return per call (default 100). Increase cursor and re-poll if there are more."
+            },
+            "returns": "Details = {Events: list, NextCursor: int}"
         }
     }
-} 
+}

@@ -44,6 +44,19 @@ import aiohttp
 import requests
 from urllib.parse import quote
 
+# Target Scheduler DB (read-only) — local-file SQLite access, no HTTP
+from ts_db import (
+    tool_get_exposure_plan as _ts_tool_get_exposure_plan,
+    tool_list_projects as _ts_tool_list_projects,
+    tool_next_target as _ts_tool_next_target,
+)
+from alerter import tool_alert_human as _alerter_tool_alert_human
+from events import (
+    EventStore,
+    start_background_subscriber,
+    tool_poll_events_since as _events_tool_poll_events_since,
+)
+
 # Configure logging
 script_dir = os.path.dirname(os.path.abspath(__file__))
 logs_dir = os.path.join(script_dir, 'logs')
@@ -7951,6 +7964,180 @@ async def nina_help(input: HelpInput) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error in nina_help: {str(e)}")
         return create_error_response("NINAHelpError", str(e))
+
+# =============================================================================
+# Target Scheduler (read-only) tools — Phase 1a of autonomous orchestrator
+#
+# These read the NINA Target Scheduler v5 SQLite DB directly. No HTTP, no NINA
+# running required. Write-back stays in NINA's own Target Scheduler integration.
+# =============================================================================
+
+class TSListProjectsInput(BaseModel):
+    profile_id: Optional[str] = Field(
+        default=None,
+        description="If provided, restrict results to this NINA profile GUID."
+    )
+    active_only: bool = Field(
+        default=True,
+        description="If true (default), return only Active (state=1) projects."
+    )
+
+
+class TSGetExposurePlanInput(BaseModel):
+    target_id: int = Field(
+        description="Target.Id from the Target Scheduler DB (see nina_ts_list_projects → list targets via nina_ts_next_target or a future targets-by-project tool)."
+    )
+
+
+class TSNextTargetInput(BaseModel):
+    profile_id: Optional[str] = Field(
+        default=None,
+        description="If provided, restrict the search to this NINA profile GUID."
+    )
+
+
+@mcp.tool()
+async def nina_ts_list_projects(input: TSListProjectsInput) -> Dict[str, Any]:
+    """List NINA Target Scheduler projects (read-only).
+
+    Returns project metadata: id, name, profile_id, state, priority,
+    minimum_altitude, maximum_altitude, meridian_window. By default only Active
+    projects are returned. Use the profile_id filter to scope to one rig/profile.
+
+    Reads %LOCALAPPDATA%/NINA/SchedulerPlugin/schedulerdb.sqlite read-only.
+    Does not require NINA to be running.
+    """
+    return _ts_tool_list_projects(profile_id=input.profile_id, active_only=input.active_only)
+
+
+@mcp.tool()
+async def nina_ts_get_exposure_plan(input: TSGetExposurePlanInput) -> Dict[str, Any]:
+    """Get the per-filter exposure plans for one Target Scheduler target.
+
+    Joins exposureplan + exposuretemplate so the result includes filter name,
+    exposure (seconds), gain, offset, bin, plus desired/acquired/accepted
+    counts and a computed remaining field. The Planner uses this to know how
+    many subs of which filter are still needed for the target.
+    """
+    return _ts_tool_get_exposure_plan(target_id=input.target_id)
+
+
+@mcp.tool()
+async def nina_ts_next_target(input: TSNextTargetInput) -> Dict[str, Any]:
+    """Pick the next Target Scheduler target with remaining frames to acquire.
+
+    Simple selection (Phase 1): walks active projects ordered by priority
+    descending, returns the first active target whose enabled exposure plans
+    still have desired > acquired. Does NOT consider altitude, moon separation,
+    or weather — the orchestrator's Planner agent layers that on top.
+
+    Returns Details.Found=false when nothing is actionable.
+    """
+    return _ts_tool_next_target(profile_id=input.profile_id)
+
+
+# =============================================================================
+# Discord alerter — Phase 1b
+# =============================================================================
+
+class AlertHumanInput(BaseModel):
+    severity: Literal["info", "alert", "panic"] = Field(
+        description="info=silent log, alert=@mention user, panic=@everyone + siren."
+    )
+    message: str = Field(description="Human-readable alert text. Truncated to 2000 chars.")
+    attach_image_path: Optional[str] = Field(
+        default=None,
+        description="Absolute path to an image file to attach (e.g. last sub thumbnail)."
+    )
+    webhook_url: Optional[str] = Field(
+        default=None,
+        description="Discord webhook URL. If omitted, reads $DISCORD_WEBHOOK_URL."
+    )
+    user_id: Optional[str] = Field(
+        default=None,
+        description="Discord user ID to @mention on ALERT severity. If omitted, reads $DISCORD_USER_ID."
+    )
+
+
+@mcp.tool()
+async def nina_alert_human(input: AlertHumanInput) -> Dict[str, Any]:
+    """Send a Discord alert to the human operator.
+
+    Use this when something needs the human's attention:
+      - info  : routine, no @mention (session started, target switched, done)
+      - alert : @mentions configured user (autofocus failed, equipment disconnect)
+      - panic : @everyone + 🚨 (safety abort, hard fault, NINA crashed)
+
+    Webhook URL and user ID can be passed explicitly or fall back to
+    DISCORD_WEBHOOK_URL / DISCORD_USER_ID environment variables.
+    """
+    webhook = input.webhook_url or os.getenv("DISCORD_WEBHOOK_URL", "")
+    user_id = input.user_id or os.getenv("DISCORD_USER_ID")
+    return await _alerter_tool_alert_human(
+        webhook_url=webhook,
+        severity=input.severity,
+        message=input.message,
+        attach_image_path=input.attach_image_path,
+        user_id=user_id,
+    )
+
+
+# =============================================================================
+# NINA event-websocket subscriber — Phase 1c
+# =============================================================================
+
+_EVENT_STORE = EventStore(max_size=1000)
+_subscriber_task: Optional[asyncio.Task] = None
+_subscriber_lock = asyncio.Lock()
+
+
+async def _ensure_subscriber_started() -> None:
+    """Lazily launch the background WebSocket subscriber on first poll."""
+    global _subscriber_task
+    async with _subscriber_lock:
+        if _subscriber_task is None or _subscriber_task.done():
+            _subscriber_task = await start_background_subscriber(
+                _EVENT_STORE, NINA_HOST, NINA_PORT
+            )
+            logger.info("event-websocket subscriber task started")
+
+
+class PollEventsInput(BaseModel):
+    cursor: Optional[int] = Field(
+        default=None,
+        description="Pass the NextCursor from your previous call. Omit/None on first poll to get everything currently buffered."
+    )
+    max_events: int = Field(
+        default=100,
+        description="Cap on events returned in this call. If the store has more, increase cursor and call again."
+    )
+
+
+@mcp.tool()
+async def nina_poll_events_since(input: PollEventsInput) -> Dict[str, Any]:
+    """Poll buffered NINA events newer than `cursor`.
+
+    The first time this is called the server lazily connects to NINA's
+    /v2/api/event-websocket and starts buffering events in memory. Subsequent
+    polls drain the buffer and return only new events.
+
+    Typical usage in an agentic loop:
+        result = nina_poll_events_since(cursor=last_cursor)
+        for event in result.Details.Events:
+            ...react...
+        last_cursor = result.Details.NextCursor
+
+    NINA events include EXPOSURESAVED, AUTOFOCUSFINISHED, SAFETY-CHANGED,
+    SEQUENCE-STARTING/FINISHED, IMAGE-SAVE, MOUNT-SLEW, etc. (see NINA
+    Advanced API docs for the full set).
+    """
+    await _ensure_subscriber_started()
+    return await _events_tool_poll_events_since(
+        _EVENT_STORE,
+        cursor=input.cursor,
+        max_events=input.max_events,
+    )
+
 
 if __name__ == "__main__":
     import signal

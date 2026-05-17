@@ -19,3 +19,7 @@ structlog>=23.1.0
 # Type hints
 typing-extensions>=4.5.0
 
+# Tests (dev — Phase 1 autopilot extensions)
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+

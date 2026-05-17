@@ -391,7 +391,54 @@ The NINA Advanced API MCP server now provides **100% coverage** of the NINA Adva
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** January 6, 2026  
-**API Version:** NINA Advanced API v2.2.13  
-**Coverage Status:** ✅ COMPLETE (100%)
+## Phase 4 — Autopilot Extensions (Orchestrator Phase 1)
+
+**Added:** May 17, 2026
+
+Tools that go *beyond* the NINA Advanced API surface to support the autonomous
+astrophotography orchestrator. These do not wrap NINA HTTP endpoints; they
+read local Target Scheduler state, send Discord alerts, and stream NINA's
+event WebSocket into an in-memory buffer.
+
+### Module: `ts_db.py` — Target Scheduler v5 SQLite reader (read-only)
+- `nina_ts_list_projects(profile_id?, active_only=True)` — list projects ordered by priority
+- `nina_ts_next_target(profile_id?)` — pick next actionable target (simple priority walk; smarter scoring is Planner-agent's job)
+- `nina_ts_get_exposure_plan(target_id)` — exposureplan ⋈ exposuretemplate with computed `remaining`
+
+Reads `%LOCALAPPDATA%\NINA\SchedulerPlugin\schedulerdb.sqlite` via SQLite URI
+`mode=ro`. Does not require NINA to be running. Write-back stays in NINA's
+own Target Scheduler integration.
+
+### Module: `alerter.py` — Discord webhook alerter
+- `nina_alert_human(severity, message, attach_image_path?, webhook_url?, user_id?)`
+
+Three severity tiers: `info` (silent), `alert` (@mention configured user),
+`panic` (@everyone + 🚨). Optional image attachment. Webhook URL and user ID
+default to `DISCORD_WEBHOOK_URL` / `DISCORD_USER_ID` env vars.
+
+### Module: `events.py` — NINA event-websocket subscriber + buffer
+- `nina_poll_events_since(cursor?, max_events=100)`
+
+Lazy-starts a background asyncio task that connects to
+`/v2/api/event-websocket` and buffers events. The poll tool returns events
+newer than `cursor` with a `NextCursor` for the next call. Bounded ring
+buffer (default 1000) with monotonic cursor — overflow drops oldest but the
+cursor keeps counting, so clients may miss but never see duplicates.
+Auto-reconnect with exponential backoff if NINA restarts.
+
+**Why this matters:** the orchestrator can run event-driven instead of
+tick-driven — agents stay idle (zero tokens) until NINA pushes something
+they care about.
+
+### Tests
+- `tests/test_ts_db.py` — 28 tests
+- `tests/test_alerter.py` — 13 tests
+- `tests/test_events.py` — 13 tests
+- Total: 54 tests, all green
+
+---
+
+**Document Version:** 2.1  
+**Last Updated:** May 17, 2026  
+**API Version:** NINA Advanced API v2.2.13 + Autopilot Extensions Phase 1  
+**Coverage Status:** ✅ COMPLETE (100%) + 5 autopilot tools
