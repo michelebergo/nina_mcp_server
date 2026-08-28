@@ -3,10 +3,10 @@
 This repository is a fork of
 [PaDev1/Nina_advanced_api_mcp](https://github.com/PaDev1/Nina_advanced_api_mcp).
 
-**The upstream repository carries no licence file.** Under default copyright that means
-all rights are reserved by its author: forking it on GitHub is permitted by GitHub's terms
-of service, but that permission does not extend to redistributing it elsewhere or to
-placing a different licence on it.
+**The upstream repository is MIT-licensed.** It carried no licence file until 28 August
+2026, which under default copyright meant all rights reserved; asked about it, its author
+confirmed the project was always intended as open source and MIT, and added the file the
+same day.
 
 ## How much of this repository is upstream
 
@@ -30,9 +30,16 @@ repository in the first place.
 
 ## Status
 
-Permission has been requested from the upstream author. Until that request is answered,
-the licensing of the upstream portions of this repository is **unresolved**, and anyone
-redistributing it should be aware of that.
+**Resolved.** The upstream author was asked directly and answered the same day:
 
-- Request: https://github.com/PaDev1/Nina_advanced_api_mcp/issues/5 (opened 2026-08-28)
+> "The project is opensource and MIT. Sorry for missing adding the file. Will fix it."
+
+The `LICENSE` file was added to the upstream repository eleven minutes later, and GitHub
+now reports it as MIT. Both the written statement and the file stand as the record.
+
+The MIT licence on this repository therefore rests on the upstream licence for the
+inherited code and on its own author for the work added here.
+
+- Request and answer: https://github.com/PaDev1/Nina_advanced_api_mcp/issues/5 (28 August 2026)
 - Raised during: security review of `nina.plugin.opencode` by Stefan Berg, 2026-08-25
+- Upstream author: [PaDev1](https://github.com/PaDev1) — the tool this one grew out of
