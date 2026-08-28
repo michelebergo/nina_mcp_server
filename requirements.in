@@ -1,0 +1,27 @@
+# Direct runtime dependencies. Edit this file, then regenerate the pinned set:
+#
+#     uv pip compile requirements.in --python-version 3.11 --output-file requirements.txt
+#
+# requirements.txt is what gets installed, and it pins every package including the
+# transitive ones. Two machines installing on different days must get the same server.
+
+# Pinned, not floated. The server is written against the fastmcp 1.x API and this is the
+# version it has run on in the field; the resolver left free picks 3.x, which is three
+# major versions of API change away and has never been tried here.
+fastmcp==1.0
+
+fastapi>=0.95.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+aiohttp>=3.8.0
+
+# Imported at nina_advanced_mcp.py:44 and missing from this list until 2026-08-28: the
+# server would not start for anyone installing from it. It worked only because the
+# N.I.N.A. OpenCode plugin happened to install it from a separate list of its own.
+requests>=2.31.0
+
+python-dotenv>=1.0.0
+python-dateutil>=2.8.2
+pytz>=2023.3
+structlog>=23.1.0
+typing-extensions>=4.5.0

@@ -1,5 +1,8 @@
 # NINA Advanced API MCP Server
 
+> **Licensing:** this is a fork of a repository that carries no licence. See
+> [NOTICE.md](NOTICE.md) before redistributing.
+
 A **Model Context Protocol (MCP) server** that lets AI agents (Claude Desktop, the NINA *AI Assistant* plugin, or any MCP-capable client) control [N.I.N.A.](https://nighttime-imaging.eu/) over its [Advanced API](https://github.com/christian-photo/ninaAPI).
 
 Talk to your observatory: *"connect the camera, cool to -10°C, slew to M31, take a 30-second exposure"* — and the agent executes it.
